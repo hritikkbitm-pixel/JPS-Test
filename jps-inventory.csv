@@ -1,0 +1,41 @@
+"id","name","price","stock","category","brand","image","images","specs","sold","available"
+"cpu-intel-14900k","Intel Core i9-14900K",54853,10,"cpu","Intel","","[]","{""tdp"":125,""socket"":""LGA1700"",""base_clock"":""3.2 GHz""}",0,true
+"cpu-amd-7800x3d","AMD Ryzen 7 7800X3D",37303,10,"cpu","AMD","","[]","{""tdp"":120,""socket"":""AM5"",""base_clock"":""4.2 GHz""}",0,true
+"cpu-intel-13600k","Intel Core i5-13600K",25999,10,"cpu","Intel","","[]","{""tdp"":125,""socket"":""LGA1700"",""base_clock"":""3.5 GHz""}",0,true
+"cpu-amd-7600","AMD Ryzen 5 7600",19050,10,"cpu","AMD","","[]","{""tdp"":65,""socket"":""AM5"",""base_clock"":""3.8 GHz""}",0,true
+"cpu-intel-14700k","Intel Core i7-14700K",43880,10,"cpu","Intel","","[]","{""tdp"":125,""socket"":""LGA1700"",""base_clock"":""3.4 GHz""}",0,true
+"mobo-msi-z790","MSI MAG Z790 TOMAHAWK WIFI",30820,10,"motherboard","MSI","","[]","{""socket"":""LGA1700"",""form_factor"":""ATX"",""memory_type"":""DDR5"",""capacity_gb"":192,""cpu_socket"":""LGA1700"",""m2_slots_gen4"":4,""sata_ports"":6}",0,true
+"mobo-asus-b650","ASUS ROG STRIX B650-A GAMING WIFI",27350,10,"motherboard","ASUS","","[]","{""socket"":""AM5"",""form_factor"":""ATX"",""memory_type"":""DDR5"",""capacity_gb"":128,""cpu_socket"":""AM5"",""m2_slots_gen4"":4,""sata_ports"":6}",0,true
+"mobo-gigabyte-b760m","Gigabyte B760M DS3H AX DDR4",14150,10,"motherboard","Gigabyte","","[]","{""socket"":""LGA1700"",""form_factor"":""Micro-ATX"",""memory_type"":""DDR4"",""capacity_gb"":128,""cpu_socket"":""LGA1700"",""m2_slots_gen4"":4,""sata_ports"":6}",0,true
+"mobo-msi-b650m","MSI B650M GAMING WIFI",10150,10,"motherboard","MSI","","[]","{""socket"":""AM5"",""form_factor"":""Micro-ATX"",""memory_type"":""DDR5"",""capacity_gb"":96,""cpu_socket"":""AM5"",""m2_slots_gen4"":2,""sata_ports"":6}",0,true
+"mobo-asus-z790-tuf","ASUS TUF GAMING Z790-PLUS WIFI",34644,10,"motherboard","ASUS","","[]","{""socket"":""LGA1700"",""form_factor"":""ATX"",""memory_type"":""DDR5"",""capacity_gb"":192,""cpu_socket"":""LGA1700"",""m2_slots_gen4"":4,""sata_ports"":6}",0,true
+"gpu-msi-4090","MSI GeForce RTX 4090 Gaming X Trio 24G",185000,5,"gpu","MSI","","[]","{""tdp"":450,""length_mm"":337,""memory_type"":""GDDR6X"",""memory"":""24.0""}",0,true
+"gpu-zotac-4070s","Zotac Gaming GeForce RTX 4070 Super Twin Edge",58911,5,"gpu","Zotac","","[]","{""tdp"":220,""length_mm"":234,""memory_type"":""GDDR6X"",""memory"":""12.0""}",0,true
+"gpu-sapphire-7900xtx","Sapphire Nitro+ AMD Radeon RX 7900 XTX",99999,5,"gpu","Sapphire","","[]","{""tdp"":355,""length_mm"":320,""memory_type"":""GDDR6"",""memory"":""24.0""}",0,true
+"gpu-asrock-7800xt","ASRock RX 7800 XT Phantom Gaming",46760,5,"gpu","ASRock","","[]","{""tdp"":263,""length_mm"":328,""memory_type"":""GDDR6"",""memory"":""16.0""}",0,true
+"gpu-msi-4060","MSI GeForce RTX 4060 Ventus 2X Black OC",28000,5,"gpu","MSI","","[]","{""tdp"":115,""length_mm"":199,""memory_type"":""GDDR6"",""memory"":""8.0""}",0,true
+"ram-gskill-trident","G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5 6000MHz",10400,20,"ram","G.Skill","","[]","{""memory_type"":""DDR5"",""capacity_gb"":32}",0,true
+"ram-corsair-vengeance-ddr5","Corsair Vengeance 32GB (1x32GB) DDR5 5200MHz",9000,20,"ram","Corsair","","[]","{""memory_type"":""DDR5"",""capacity_gb"":32}",0,true
+"ram-adata-lancer","ADATA XPG Lancer RGB 16GB (1x16GB) DDR5 5200MHz",4620,20,"ram","ADATA","","[]","{""memory_type"":""DDR5"",""capacity_gb"":16}",0,true
+"ram-corsair-vengeance-ddr4","Corsair Vengeance LPX 16GB (1x16GB) DDR4 3200MHz",3500,20,"ram","Corsair","","[]","{""memory_type"":""DDR4"",""capacity_gb"":16}",0,true
+"ram-gskill-ripjaws","G.Skill Ripjaws V 16GB (2x8GB) DDR4 3600MHz",3822,20,"ram","G.Skill","","[]","{""memory_type"":""DDR4"",""capacity_gb"":16}",0,true
+"ssd-samsung-990","Samsung 990 Pro 1TB NVMe",11999,20,"storage","Samsung","","[]","{""form_factor"":""M.2"",""capacity_gb"":1000,""interface"":""PCIe Gen4""}",0,true
+"ssd-wd-sn850x","WD_BLACK SN850X 1TB NVMe",11899,20,"storage","WD","","[]","{""form_factor"":""M.2"",""capacity_gb"":1000,""interface"":""PCIe Gen4""}",0,true
+"ssd-crucial-p3p","Crucial P3 Plus 1TB NVMe",7140,20,"storage","Crucial","","[]","{""form_factor"":""M.2"",""capacity_gb"":1000,""interface"":""PCIe Gen4""}",0,true
+"ssd-kingston-kc3000","Kingston KC3000 1TB NVMe",12599,20,"storage","Kingston","","[]","{""form_factor"":""M.2"",""capacity_gb"":1000,""interface"":""PCIe Gen4""}",0,true
+"ssd-wd-sn580","WD Blue SN580 1TB NVMe",6000,20,"storage","WD","","[]","{""form_factor"":""M.2"",""capacity_gb"":1000,""interface"":""PCIe Gen4""}",0,true
+"psu-corsair-rm850e","Corsair RM850e 850W Gold",11580,10,"psu","Corsair","","[]","{""form_factor"":""ATX""}",0,true
+"psu-msi-a850g","MSI MPG A850G PCIE5 850W Gold",11500,10,"psu","MSI","","[]","{""form_factor"":""ATX""}",0,true
+"psu-deepcool-pm750d","DeepCool PM750D 750W Gold",6199,10,"psu","DeepCool","","[]","{""form_factor"":""ATX""}",0,true
+"psu-asus-tuf-1000","ASUS TUF Gaming 1000W Gold",17290,10,"psu","ASUS","","[]","{""form_factor"":""ATX""}",0,true
+"psu-cm-mwe-650","Cooler Master MWE 650 Bronze V2",5000,10,"psu","Cooler Master","","[]","{""form_factor"":""ATX""}",0,true
+"case-lianli-o11","Lian Li O11 Dynamic EVO",15739,5,"case","Lian Li","","[]","{""length_mm"":422,""height_mm"":167,""form_factor"":""ATX|Micro-ATX|E-ATX"",""supported_motherboards"":[""ATX"",""Micro-ATX"",""E-ATX""]}",0,true
+"case-nzxt-h5","NZXT H5 Flow",7500,5,"case","NZXT","","[]","{""length_mm"":365,""height_mm"":165,""form_factor"":""ATX|Micro-ATX"",""supported_motherboards"":[""ATX"",""Micro-ATX""]}",0,true
+"case-corsair-4000d","Corsair 4000D Airflow",6345,5,"case","Corsair","","[]","{""length_mm"":360,""height_mm"":170,""form_factor"":""ATX|Micro-ATX|E-ATX"",""supported_motherboards"":[""ATX"",""Micro-ATX"",""E-ATX""]}",0,true
+"case-deepcool-ch510","DeepCool CH510 Mesh Digital",7199,5,"case","DeepCool","","[]","{""length_mm"":380,""height_mm"":175,""form_factor"":""ATX|Micro-ATX|E-ATX"",""supported_motherboards"":[""ATX"",""Micro-ATX"",""E-ATX""]}",0,true
+"case-ant-ice100","Ant Esports ICE-100 Air Mini",3500,5,"case","Ant Esports","","[]","{""length_mm"":340,""height_mm"":160,""form_factor"":""Micro-ATX|Mini-ITX"",""supported_motherboards"":[""Micro-ATX"",""Mini-ITX""]}",0,true
+"cooler-deepcool-le720","DeepCool LE720 360mm AIO",6620,10,"cooler","DeepCool","","[]","{""length_mm"":360,""socket"":""LGA1700|AM5|AM4"",""supported_sockets"":[""LGA1700"",""AM5"",""AM4""]}",0,true
+"cooler-nzxt-kraken-240","NZXT Kraken 240 AIO",13700,10,"cooler","NZXT","","[]","{""length_mm"":240,""socket"":""LGA1700|AM5|AM4"",""supported_sockets"":[""LGA1700"",""AM5"",""AM4""]}",0,true
+"cooler-deepcool-ak620","DeepCool AK620 Air Cooler",5770,10,"cooler","DeepCool","","[]","{""height_mm"":160,""socket"":""LGA1700|AM5|AM4"",""supported_sockets"":[""LGA1700"",""AM5"",""AM4""]}",0,true
+"cooler-noctua-nhd15","Noctua NH-D15",9000,10,"cooler","Noctua","","[]","{""height_mm"":165,""socket"":""LGA1700|AM5|AM4"",""supported_sockets"":[""LGA1700"",""AM5"",""AM4""]}",0,true
+"cooler-cm-hyper212","Cooler Master Hyper 212 Spectrum V3",2000,10,"cooler","Cooler Master","","[]","{""height_mm"":152,""socket"":""LGA1700|AM5|AM4"",""supported_sockets"":[""LGA1700"",""AM5"",""AM4""]}",0,true

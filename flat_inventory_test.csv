@@ -1,0 +1,4 @@
+id,name,category,brand,price,stock,sold,available,image_1,image_2,image_3,image_4,image_5,image_6,socket,form_factor,tdp_watts,memory_type,clock_speed,chipset,vram_gb,length_mm,height_mm,slots,interface,capacity_gb,modules_count
+flat-cpu-1,Flat CPU Test,cpu,Intel,45000,10,0,TRUE,/images/cpu.png,,,,,,LGA1700,,125,,3.5GHz,,,,,,,,,,
+flat-gpu-1,Flat GPU Test,gpu,NVIDIA,150000,5,0,TRUE,/images/gpu.png,,,,,,,,,,NVIDIA,24GB,340,,,,,,,
+flat-mobo-1,Flat Mobo Test,motherboard,ASUS,30000,8,0,TRUE,/images/mobo.png,,,,,,LGA1700,ATX,,DDR5,,Z790,,,,4,,128,

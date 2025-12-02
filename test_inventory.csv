@@ -1,0 +1,3 @@
+id,name,price,stock,category,brand,image,images,specs,sold,available
+test-cpu-1,Test CPU,10000,50,cpu,TestBrand,/images/cpu.png,[],"{""socket"":""LGA1700""}",0,true
+test-gpu-1,Test GPU,20000,20,gpu,TestBrand,/images/gpu.png,[],"{""chipset"":""NVIDIA""}",0,true

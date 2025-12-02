@@ -1,0 +1,895 @@
+[
+  {
+    "_id": "692c00582ee25db14444d876",
+    "id": "cpu-intel-14900k",
+    "__v": 0,
+    "available": true,
+    "brand": "Intel",
+    "category": "cpu",
+    "createdAt": "2025-11-30T08:29:12.237Z",
+    "image": "",
+    "images": [],
+    "name": "Intel Core i9-14900K",
+    "price": 54853,
+    "sold": 0,
+    "specs": {
+      "tdp": 125,
+      "socket": "LGA1700",
+      "base_clock": "3.2 GHz"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.215Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d877",
+    "id": "cpu-amd-7800x3d",
+    "__v": 0,
+    "available": true,
+    "brand": "AMD",
+    "category": "cpu",
+    "createdAt": "2025-11-30T08:29:12.247Z",
+    "image": "",
+    "images": [],
+    "name": "AMD Ryzen 7 7800X3D",
+    "price": 37303,
+    "sold": 0,
+    "specs": {
+      "tdp": 120,
+      "socket": "AM5",
+      "base_clock": "4.2 GHz"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.223Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d878",
+    "id": "cpu-intel-13600k",
+    "__v": 0,
+    "available": true,
+    "brand": "Intel",
+    "category": "cpu",
+    "createdAt": "2025-11-30T08:29:12.249Z",
+    "image": "",
+    "images": [],
+    "name": "Intel Core i5-13600K",
+    "price": 25999,
+    "sold": 0,
+    "specs": {
+      "tdp": 125,
+      "socket": "LGA1700",
+      "base_clock": "3.5 GHz"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.225Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d879",
+    "id": "cpu-amd-7600",
+    "__v": 0,
+    "available": true,
+    "brand": "AMD",
+    "category": "cpu",
+    "createdAt": "2025-11-30T08:29:12.249Z",
+    "image": "",
+    "images": [],
+    "name": "AMD Ryzen 5 7600",
+    "price": 19050,
+    "sold": 0,
+    "specs": {
+      "tdp": 65,
+      "socket": "AM5",
+      "base_clock": "3.8 GHz"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.227Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d87a",
+    "id": "cpu-intel-14700k",
+    "__v": 0,
+    "available": true,
+    "brand": "Intel",
+    "category": "cpu",
+    "createdAt": "2025-11-30T08:29:12.250Z",
+    "image": "",
+    "images": [],
+    "name": "Intel Core i7-14700K",
+    "price": 43880,
+    "sold": 0,
+    "specs": {
+      "tdp": 125,
+      "socket": "LGA1700",
+      "base_clock": "3.4 GHz"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.228Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d87b",
+    "id": "mobo-msi-z790",
+    "__v": 0,
+    "available": true,
+    "brand": "MSI",
+    "category": "motherboard",
+    "createdAt": "2025-11-30T08:29:12.251Z",
+    "image": "",
+    "images": [],
+    "name": "MSI MAG Z790 TOMAHAWK WIFI",
+    "price": 30820,
+    "sold": 0,
+    "specs": {
+      "socket": "LGA1700",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "capacity_gb": 192,
+      "cpu_socket": "LGA1700",
+      "m2_slots_gen4": 4,
+      "sata_ports": 6
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.229Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d87c",
+    "id": "mobo-asus-b650",
+    "__v": 0,
+    "available": true,
+    "brand": "ASUS",
+    "category": "motherboard",
+    "createdAt": "2025-11-30T08:29:12.252Z",
+    "image": "",
+    "images": [],
+    "name": "ASUS ROG STRIX B650-A GAMING WIFI",
+    "price": 27350,
+    "sold": 0,
+    "specs": {
+      "socket": "AM5",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "capacity_gb": 128,
+      "cpu_socket": "AM5",
+      "m2_slots_gen4": 4,
+      "sata_ports": 6
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.230Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d87d",
+    "id": "mobo-gigabyte-b760m",
+    "__v": 0,
+    "available": true,
+    "brand": "Gigabyte",
+    "category": "motherboard",
+    "createdAt": "2025-11-30T08:29:12.252Z",
+    "image": "",
+    "images": [],
+    "name": "Gigabyte B760M DS3H AX DDR4",
+    "price": 14150,
+    "sold": 0,
+    "specs": {
+      "socket": "LGA1700",
+      "form_factor": "Micro-ATX",
+      "memory_type": "DDR4",
+      "capacity_gb": 128,
+      "cpu_socket": "LGA1700",
+      "m2_slots_gen4": 4,
+      "sata_ports": 6
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.231Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d87e",
+    "id": "mobo-msi-b650m",
+    "__v": 0,
+    "available": true,
+    "brand": "MSI",
+    "category": "motherboard",
+    "createdAt": "2025-11-30T08:29:12.253Z",
+    "image": "",
+    "images": [],
+    "name": "MSI B650M GAMING WIFI",
+    "price": 10150,
+    "sold": 0,
+    "specs": {
+      "socket": "AM5",
+      "form_factor": "Micro-ATX",
+      "memory_type": "DDR5",
+      "capacity_gb": 96,
+      "cpu_socket": "AM5",
+      "m2_slots_gen4": 2,
+      "sata_ports": 6
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.232Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d87f",
+    "id": "mobo-asus-z790-tuf",
+    "__v": 0,
+    "available": true,
+    "brand": "ASUS",
+    "category": "motherboard",
+    "createdAt": "2025-11-30T08:29:12.254Z",
+    "image": "",
+    "images": [],
+    "name": "ASUS TUF GAMING Z790-PLUS WIFI",
+    "price": 34644,
+    "sold": 0,
+    "specs": {
+      "socket": "LGA1700",
+      "form_factor": "ATX",
+      "memory_type": "DDR5",
+      "capacity_gb": 192,
+      "cpu_socket": "LGA1700",
+      "m2_slots_gen4": 4,
+      "sata_ports": 6
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.233Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d880",
+    "id": "gpu-msi-4090",
+    "__v": 0,
+    "available": true,
+    "brand": "MSI",
+    "category": "gpu",
+    "createdAt": "2025-11-30T08:29:12.255Z",
+    "image": "",
+    "images": [],
+    "name": "MSI GeForce RTX 4090 Gaming X Trio 24G",
+    "price": 185000,
+    "sold": 0,
+    "specs": {
+      "tdp": 450,
+      "length_mm": 337,
+      "memory_type": "GDDR6X",
+      "memory": "24.0"
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.235Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d881",
+    "id": "gpu-zotac-4070s",
+    "__v": 0,
+    "available": true,
+    "brand": "Zotac",
+    "category": "gpu",
+    "createdAt": "2025-11-30T08:29:12.256Z",
+    "image": "",
+    "images": [],
+    "name": "Zotac Gaming GeForce RTX 4070 Super Twin Edge",
+    "price": 58911,
+    "sold": 0,
+    "specs": {
+      "tdp": 220,
+      "length_mm": 234,
+      "memory_type": "GDDR6X",
+      "memory": "12.0"
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.236Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d882",
+    "id": "gpu-sapphire-7900xtx",
+    "__v": 0,
+    "available": true,
+    "brand": "Sapphire",
+    "category": "gpu",
+    "createdAt": "2025-11-30T08:29:12.257Z",
+    "image": "",
+    "images": [],
+    "name": "Sapphire Nitro+ AMD Radeon RX 7900 XTX",
+    "price": 99999,
+    "sold": 0,
+    "specs": {
+      "tdp": 355,
+      "length_mm": 320,
+      "memory_type": "GDDR6",
+      "memory": "24.0"
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.237Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d883",
+    "id": "gpu-asrock-7800xt",
+    "__v": 0,
+    "available": true,
+    "brand": "ASRock",
+    "category": "gpu",
+    "createdAt": "2025-11-30T08:29:12.257Z",
+    "image": "",
+    "images": [],
+    "name": "ASRock RX 7800 XT Phantom Gaming",
+    "price": 46760,
+    "sold": 0,
+    "specs": {
+      "tdp": 263,
+      "length_mm": 328,
+      "memory_type": "GDDR6",
+      "memory": "16.0"
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.237Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d884",
+    "id": "gpu-msi-4060",
+    "__v": 0,
+    "available": true,
+    "brand": "MSI",
+    "category": "gpu",
+    "createdAt": "2025-11-30T08:29:12.258Z",
+    "image": "",
+    "images": [],
+    "name": "MSI GeForce RTX 4060 Ventus 2X Black OC",
+    "price": 28000,
+    "sold": 0,
+    "specs": {
+      "tdp": 115,
+      "length_mm": 199,
+      "memory_type": "GDDR6",
+      "memory": "8.0"
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.238Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d885",
+    "id": "ram-gskill-trident",
+    "__v": 0,
+    "available": true,
+    "brand": "G.Skill",
+    "category": "ram",
+    "createdAt": "2025-11-30T08:29:12.259Z",
+    "image": "",
+    "images": [],
+    "name": "G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5 6000MHz",
+    "price": 10400,
+    "sold": 0,
+    "specs": {
+      "memory_type": "DDR5",
+      "capacity_gb": 32
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.239Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d886",
+    "id": "ram-corsair-vengeance-ddr5",
+    "__v": 0,
+    "available": true,
+    "brand": "Corsair",
+    "category": "ram",
+    "createdAt": "2025-11-30T08:29:12.259Z",
+    "image": "",
+    "images": [],
+    "name": "Corsair Vengeance 32GB (1x32GB) DDR5 5200MHz",
+    "price": 9000,
+    "sold": 0,
+    "specs": {
+      "memory_type": "DDR5",
+      "capacity_gb": 32
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.240Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d887",
+    "id": "ram-adata-lancer",
+    "__v": 0,
+    "available": true,
+    "brand": "ADATA",
+    "category": "ram",
+    "createdAt": "2025-11-30T08:29:12.260Z",
+    "image": "",
+    "images": [],
+    "name": "ADATA XPG Lancer RGB 16GB (1x16GB) DDR5 5200MHz",
+    "price": 4620,
+    "sold": 0,
+    "specs": {
+      "memory_type": "DDR5",
+      "capacity_gb": 16
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.241Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d888",
+    "id": "ram-corsair-vengeance-ddr4",
+    "__v": 0,
+    "available": true,
+    "brand": "Corsair",
+    "category": "ram",
+    "createdAt": "2025-11-30T08:29:12.260Z",
+    "image": "",
+    "images": [],
+    "name": "Corsair Vengeance LPX 16GB (1x16GB) DDR4 3200MHz",
+    "price": 3500,
+    "sold": 0,
+    "specs": {
+      "memory_type": "DDR4",
+      "capacity_gb": 16
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.242Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d889",
+    "id": "ram-gskill-ripjaws",
+    "__v": 0,
+    "available": true,
+    "brand": "G.Skill",
+    "category": "ram",
+    "createdAt": "2025-11-30T08:29:12.260Z",
+    "image": "",
+    "images": [],
+    "name": "G.Skill Ripjaws V 16GB (2x8GB) DDR4 3600MHz",
+    "price": 3822,
+    "sold": 0,
+    "specs": {
+      "memory_type": "DDR4",
+      "capacity_gb": 16
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.242Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d88a",
+    "id": "ssd-samsung-990",
+    "__v": 0,
+    "available": true,
+    "brand": "Samsung",
+    "category": "storage",
+    "createdAt": "2025-11-30T08:29:12.261Z",
+    "image": "",
+    "images": [],
+    "name": "Samsung 990 Pro 1TB NVMe",
+    "price": 11999,
+    "sold": 0,
+    "specs": {
+      "form_factor": "M.2",
+      "capacity_gb": 1000,
+      "interface": "PCIe Gen4"
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.243Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d88b",
+    "id": "ssd-wd-sn850x",
+    "__v": 0,
+    "available": true,
+    "brand": "WD",
+    "category": "storage",
+    "createdAt": "2025-11-30T08:29:12.261Z",
+    "image": "",
+    "images": [],
+    "name": "WD_BLACK SN850X 1TB NVMe",
+    "price": 11899,
+    "sold": 0,
+    "specs": {
+      "form_factor": "M.2",
+      "capacity_gb": 1000,
+      "interface": "PCIe Gen4"
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.244Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d88c",
+    "id": "ssd-crucial-p3p",
+    "__v": 0,
+    "available": true,
+    "brand": "Crucial",
+    "category": "storage",
+    "createdAt": "2025-11-30T08:29:12.262Z",
+    "image": "",
+    "images": [],
+    "name": "Crucial P3 Plus 1TB NVMe",
+    "price": 7140,
+    "sold": 0,
+    "specs": {
+      "form_factor": "M.2",
+      "capacity_gb": 1000,
+      "interface": "PCIe Gen4"
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.245Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d88d",
+    "id": "ssd-kingston-kc3000",
+    "__v": 0,
+    "available": true,
+    "brand": "Kingston",
+    "category": "storage",
+    "createdAt": "2025-11-30T08:29:12.263Z",
+    "image": "",
+    "images": [],
+    "name": "Kingston KC3000 1TB NVMe",
+    "price": 12599,
+    "sold": 0,
+    "specs": {
+      "form_factor": "M.2",
+      "capacity_gb": 1000,
+      "interface": "PCIe Gen4"
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.246Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d88e",
+    "id": "ssd-wd-sn580",
+    "__v": 0,
+    "available": true,
+    "brand": "WD",
+    "category": "storage",
+    "createdAt": "2025-11-30T08:29:12.263Z",
+    "image": "",
+    "images": [],
+    "name": "WD Blue SN580 1TB NVMe",
+    "price": 6000,
+    "sold": 0,
+    "specs": {
+      "form_factor": "M.2",
+      "capacity_gb": 1000,
+      "interface": "PCIe Gen4"
+    },
+    "stock": 20,
+    "updatedAt": "2025-11-30T11:08:38.247Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d88f",
+    "id": "psu-corsair-rm850e",
+    "__v": 0,
+    "available": true,
+    "brand": "Corsair",
+    "category": "psu",
+    "createdAt": "2025-11-30T08:29:12.264Z",
+    "image": "",
+    "images": [],
+    "name": "Corsair RM850e 850W Gold",
+    "price": 11580,
+    "sold": 0,
+    "specs": {
+      "form_factor": "ATX"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.248Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d890",
+    "id": "psu-msi-a850g",
+    "__v": 0,
+    "available": true,
+    "brand": "MSI",
+    "category": "psu",
+    "createdAt": "2025-11-30T08:29:12.264Z",
+    "image": "",
+    "images": [],
+    "name": "MSI MPG A850G PCIE5 850W Gold",
+    "price": 11500,
+    "sold": 0,
+    "specs": {
+      "form_factor": "ATX"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.248Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d891",
+    "id": "psu-deepcool-pm750d",
+    "__v": 0,
+    "available": true,
+    "brand": "DeepCool",
+    "category": "psu",
+    "createdAt": "2025-11-30T08:29:12.265Z",
+    "image": "",
+    "images": [],
+    "name": "DeepCool PM750D 750W Gold",
+    "price": 6199,
+    "sold": 0,
+    "specs": {
+      "form_factor": "ATX"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.249Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d892",
+    "id": "psu-asus-tuf-1000",
+    "__v": 0,
+    "available": true,
+    "brand": "ASUS",
+    "category": "psu",
+    "createdAt": "2025-11-30T08:29:12.265Z",
+    "image": "",
+    "images": [],
+    "name": "ASUS TUF Gaming 1000W Gold",
+    "price": 17290,
+    "sold": 0,
+    "specs": {
+      "form_factor": "ATX"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.250Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d893",
+    "id": "psu-cm-mwe-650",
+    "__v": 0,
+    "available": true,
+    "brand": "Cooler Master",
+    "category": "psu",
+    "createdAt": "2025-11-30T08:29:12.266Z",
+    "image": "",
+    "images": [],
+    "name": "Cooler Master MWE 650 Bronze V2",
+    "price": 5000,
+    "sold": 0,
+    "specs": {
+      "form_factor": "ATX"
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.251Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d894",
+    "id": "case-lianli-o11",
+    "__v": 0,
+    "available": true,
+    "brand": "Lian Li",
+    "category": "case",
+    "createdAt": "2025-11-30T08:29:12.266Z",
+    "image": "",
+    "images": [],
+    "name": "Lian Li O11 Dynamic EVO",
+    "price": 15739,
+    "sold": 0,
+    "specs": {
+      "length_mm": 422,
+      "height_mm": 167,
+      "form_factor": "ATX|Micro-ATX|E-ATX",
+      "supported_motherboards": [
+        "ATX",
+        "Micro-ATX",
+        "E-ATX"
+      ]
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.252Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d895",
+    "id": "case-nzxt-h5",
+    "__v": 0,
+    "available": true,
+    "brand": "NZXT",
+    "category": "case",
+    "createdAt": "2025-11-30T08:29:12.267Z",
+    "image": "",
+    "images": [],
+    "name": "NZXT H5 Flow",
+    "price": 7500,
+    "sold": 0,
+    "specs": {
+      "length_mm": 365,
+      "height_mm": 165,
+      "form_factor": "ATX|Micro-ATX",
+      "supported_motherboards": [
+        "ATX",
+        "Micro-ATX"
+      ]
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.253Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d896",
+    "id": "case-corsair-4000d",
+    "__v": 0,
+    "available": true,
+    "brand": "Corsair",
+    "category": "case",
+    "createdAt": "2025-11-30T08:29:12.267Z",
+    "image": "",
+    "images": [],
+    "name": "Corsair 4000D Airflow",
+    "price": 6345,
+    "sold": 0,
+    "specs": {
+      "length_mm": 360,
+      "height_mm": 170,
+      "form_factor": "ATX|Micro-ATX|E-ATX",
+      "supported_motherboards": [
+        "ATX",
+        "Micro-ATX",
+        "E-ATX"
+      ]
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.254Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d897",
+    "id": "case-deepcool-ch510",
+    "__v": 0,
+    "available": true,
+    "brand": "DeepCool",
+    "category": "case",
+    "createdAt": "2025-11-30T08:29:12.268Z",
+    "image": "",
+    "images": [],
+    "name": "DeepCool CH510 Mesh Digital",
+    "price": 7199,
+    "sold": 0,
+    "specs": {
+      "length_mm": 380,
+      "height_mm": 175,
+      "form_factor": "ATX|Micro-ATX|E-ATX",
+      "supported_motherboards": [
+        "ATX",
+        "Micro-ATX",
+        "E-ATX"
+      ]
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.255Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d898",
+    "id": "case-ant-ice100",
+    "__v": 0,
+    "available": true,
+    "brand": "Ant Esports",
+    "category": "case",
+    "createdAt": "2025-11-30T08:29:12.268Z",
+    "image": "",
+    "images": [],
+    "name": "Ant Esports ICE-100 Air Mini",
+    "price": 3500,
+    "sold": 0,
+    "specs": {
+      "length_mm": 340,
+      "height_mm": 160,
+      "form_factor": "Micro-ATX|Mini-ITX",
+      "supported_motherboards": [
+        "Micro-ATX",
+        "Mini-ITX"
+      ]
+    },
+    "stock": 5,
+    "updatedAt": "2025-11-30T11:08:38.256Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d899",
+    "id": "cooler-deepcool-le720",
+    "__v": 0,
+    "available": true,
+    "brand": "DeepCool",
+    "category": "cooler",
+    "createdAt": "2025-11-30T08:29:12.269Z",
+    "image": "",
+    "images": [],
+    "name": "DeepCool LE720 360mm AIO",
+    "price": 6620,
+    "sold": 0,
+    "specs": {
+      "length_mm": 360,
+      "socket": "LGA1700|AM5|AM4",
+      "supported_sockets": [
+        "LGA1700",
+        "AM5",
+        "AM4"
+      ]
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.256Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d89a",
+    "id": "cooler-nzxt-kraken-240",
+    "__v": 0,
+    "available": true,
+    "brand": "NZXT",
+    "category": "cooler",
+    "createdAt": "2025-11-30T08:29:12.269Z",
+    "image": "",
+    "images": [],
+    "name": "NZXT Kraken 240 AIO",
+    "price": 13700,
+    "sold": 0,
+    "specs": {
+      "length_mm": 240,
+      "socket": "LGA1700|AM5|AM4",
+      "supported_sockets": [
+        "LGA1700",
+        "AM5",
+        "AM4"
+      ]
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.257Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d89b",
+    "id": "cooler-deepcool-ak620",
+    "__v": 0,
+    "available": true,
+    "brand": "DeepCool",
+    "category": "cooler",
+    "createdAt": "2025-11-30T08:29:12.269Z",
+    "image": "",
+    "images": [],
+    "name": "DeepCool AK620 Air Cooler",
+    "price": 5770,
+    "sold": 0,
+    "specs": {
+      "height_mm": 160,
+      "socket": "LGA1700|AM5|AM4",
+      "supported_sockets": [
+        "LGA1700",
+        "AM5",
+        "AM4"
+      ]
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.258Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d89c",
+    "id": "cooler-noctua-nhd15",
+    "__v": 0,
+    "available": true,
+    "brand": "Noctua",
+    "category": "cooler",
+    "createdAt": "2025-11-30T08:29:12.270Z",
+    "image": "",
+    "images": [],
+    "name": "Noctua NH-D15",
+    "price": 9000,
+    "sold": 0,
+    "specs": {
+      "height_mm": 165,
+      "socket": "LGA1700|AM5|AM4",
+      "supported_sockets": [
+        "LGA1700",
+        "AM5",
+        "AM4"
+      ]
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.259Z"
+  },
+  {
+    "_id": "692c00582ee25db14444d89d",
+    "id": "cooler-cm-hyper212",
+    "__v": 0,
+    "available": true,
+    "brand": "Cooler Master",
+    "category": "cooler",
+    "createdAt": "2025-11-30T08:29:12.271Z",
+    "image": "",
+    "images": [],
+    "name": "Cooler Master Hyper 212 Spectrum V3",
+    "price": 2000,
+    "sold": 0,
+    "specs": {
+      "height_mm": 152,
+      "socket": "LGA1700|AM5|AM4",
+      "supported_sockets": [
+        "LGA1700",
+        "AM5",
+        "AM4"
+      ]
+    },
+    "stock": 10,
+    "updatedAt": "2025-11-30T11:08:38.260Z"
+  }
+]

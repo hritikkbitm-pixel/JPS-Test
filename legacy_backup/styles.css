@@ -1,0 +1,134 @@
+:root {
+    --jps-red: #ed1c24;
+    --jps-dark: #222222;
+    --jps-gray: #f4f4f4;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    -webkit-font-smoothing: antialiased;
+}
+
+.text-brand-red {
+    color: var(--jps-red);
+}
+
+.bg-brand-red {
+    background-color: var(--jps-red);
+}
+
+.bg-brand-dark {
+    background-color: var(--jps-dark);
+}
+
+.border-brand-red {
+    border-color: var(--jps-red);
+}
+
+.nav-item {
+    position: relative;
+    transition: color 0.3s;
+}
+
+.nav-item:hover {
+    color: var(--jps-red);
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background-color: var(--jps-red);
+    transition: width 0.3s;
+}
+
+.nav-item:hover::after {
+    width: 100%;
+}
+
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: transparent;
+}
+
+.product-card:hover .add-btn {
+    background-color: var(--jps-red);
+    color: white;
+}
+
+.builder-slot.locked {
+    opacity: 0.6;
+    pointer-events: none;
+    filter: grayscale(100%);
+    background-color: #f3f4f6;
+}
+
+.builder-slot.active {
+    border-color: var(--jps-red);
+    box-shadow: 0 0 0 2px rgba(237, 28, 36, 0.1);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--jps-red);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.toast-enter {
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.img-fit-box {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+.toggle-checkbox:checked {
+    right: 0;
+    border-color: #10B981;
+}
+
+.toggle-checkbox:checked+.toggle-label {
+    background-color: #10B981;
+}
+
+.carousel-slide {
+    transition: transform 0.5s ease-in-out;
+}
+
+.fade-in {
+    animation: slideIn 0.5s ease-out forwards;
+}
