@@ -18,24 +18,30 @@ const handler = NextAuth({
             },
             async authorize(credentials) {
                 try {
+                    console.log("Attempting login for:", credentials?.email);
                     await dbConnect();
 
                     if (!credentials?.email || !credentials?.password) {
+                        console.log("Missing credentials");
                         throw new Error('Please provide email and password');
                     }
 
                     const user = await User.findOne({ email: credentials.email }).select('+password');
 
                     if (!user) {
+                        console.log("User not found in DB");
                         throw new Error('Invalid credentials');
                     }
 
+                    console.log("User found, checking password...");
                     const isMatch = await user.matchPassword(credentials.password);
 
                     if (!isMatch) {
+                        console.log("Password mismatch");
                         throw new Error('Invalid credentials');
                     }
 
+                    console.log("Login successful");
                     return {
                         id: user._id.toString(),
                         _id: user._id.toString(),
