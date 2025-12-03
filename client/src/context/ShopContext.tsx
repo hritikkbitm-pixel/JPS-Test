@@ -54,7 +54,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchBanners = async () => {
             try {
-                const res = await fetch('${API_URL}/banners');
+                const res = await fetch(`${API_URL}/banners`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.length > 0) {
@@ -63,7 +63,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                         setBanners(ensureIds(initialBanners || []));
                         // Seed initial banners
                         initialBanners.forEach(async (banner) => {
-                            await fetch('${API_URL}/banners', {
+                            await fetch(`${API_URL}/banners`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ ...banner, id: Math.random().toString(36).substr(2, 9) })
@@ -83,7 +83,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await fetch('${API_URL}/products');
+                const res = await fetch(`${API_URL}/products`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.length > 0) {
@@ -93,7 +93,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                         setProductsState(initialProducts);
                         // Optional: Seed the database
                         initialProducts.forEach(async (prod) => {
-                            await fetch('${API_URL}/products', {
+                            await fetch(`${API_URL}/products`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                                 body: JSON.stringify(prod)
@@ -123,7 +123,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch('${API_URL}/categories');
+                const res = await fetch(`${API_URL}/categories`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.length > 0) {
@@ -131,7 +131,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                     } else {
                         setCategories(initialCategories);
                         initialCategories.forEach(async (cat) => {
-                            await fetch('${API_URL}/categories', {
+                            await fetch(`${API_URL}/categories`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(cat)
@@ -156,7 +156,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const res = await fetch('${API_URL}/orders');
+                const res = await fetch(`${API_URL}/orders`);
                 if (res.ok) {
                     const data = await res.json();
                     setOrders(data);
@@ -197,7 +197,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     const addCategory = async (category: Category) => {
         setCategories(prev => [...prev, category]);
         try {
-            await fetch('${API_URL}/categories', {
+            await fetch(`${API_URL}/categories`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(category)
@@ -222,7 +222,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     const addProduct = async (product: Product) => {
         setProductsState(prev => [...prev, product]);
         try {
-            await fetch('${API_URL}/products', {
+            await fetch(`${API_URL}/products`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(product)
@@ -265,7 +265,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         const newBanner = { ...banner, id: Math.random().toString(36).substr(2, 9) };
         setBanners(prev => [...prev, newBanner]);
         try {
-            await fetch('${API_URL}/banners', {
+            await fetch(`${API_URL}/banners`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(newBanner)
@@ -290,7 +290,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     const addOrder = async (order: Order) => {
         setOrders(prev => [order, ...prev]);
         try {
-            await fetch('${API_URL}/orders', {
+            await fetch(`${API_URL}/orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(order)
