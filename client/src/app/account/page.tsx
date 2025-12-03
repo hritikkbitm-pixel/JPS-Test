@@ -12,6 +12,48 @@ export default function AccountPage() {
     const [activeTab, setActiveTab] = useState<'orders' | 'addresses'>('orders');
     const [showRegister, setShowRegister] = useState(false);
 
+    // Fetch addresses when tab changes to addresses
+    React.useEffect(() => {
+        if (activeTab === 'addresses' && user?.email) {
+            fetch('/api/user/address')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.addresses) {
+                        setLocalAddresses(data.addresses);
+                    }
+                })
+                .catch(err => console.error("Failed to load addresses", err));
+        }
+    }, [activeTab, user]);
+
+    const [localAddresses, setLocalAddresses] = useState<any[]>([]);
+
+    // Sync local addresses with user.addresses initially
+    React.useEffect(() => {
+        if (user?.addresses) {
+            setLocalAddresses(user.addresses);
+        }
+    }, [user]);
+
+    const handleDeleteAddress = async (index: number) => {
+        if (!confirm("Are you sure you want to delete this address?")) return;
+
+        try {
+            const res = await fetch('/api/user/address', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index }),
+            });
+            const data = await res.json();
+            if (data.addresses) {
+                setLocalAddresses(data.addresses);
+            }
+        } catch (err) {
+            console.error("Failed to delete address", err);
+            alert("Failed to delete address");
+        }
+    };
+
     if (!user) {
         return (
             <div className="container mx-auto px-4 py-10">
@@ -51,52 +93,6 @@ export default function AccountPage() {
             </div>
         );
     }
-
-    // Fetch addresses when tab changes to addresses
-    React.useEffect(() => {
-        if (activeTab === 'addresses' && user?.email) {
-            fetch('/api/user/address')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.addresses) {
-                        // Update local user state with fresh addresses
-                        // This assumes updateUser merges or we might need a local state for addresses if we don't want to touch global user
-                        // For now, let's use a local state for display to be safe and fast
-                        setLocalAddresses(data.addresses);
-                    }
-                })
-                .catch(err => console.error("Failed to load addresses", err));
-        }
-    }, [activeTab, user]);
-
-    const [localAddresses, setLocalAddresses] = useState<any[]>([]);
-
-    // Sync local addresses with user.addresses initially
-    React.useEffect(() => {
-        if (user?.addresses) {
-            setLocalAddresses(user.addresses);
-        }
-    }, [user]);
-
-    const handleDeleteAddress = async (index: number) => {
-        if (!confirm("Are you sure you want to delete this address?")) return;
-
-        try {
-            const res = await fetch('/api/user/address', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ index }),
-            });
-            const data = await res.json();
-            if (data.addresses) {
-                setLocalAddresses(data.addresses);
-                // Optionally update global user context if needed, but local display is enough for now
-            }
-        } catch (err) {
-            console.error("Failed to delete address", err);
-            alert("Failed to delete address");
-        }
-    };
 
     return (
         <div className="container mx-auto px-4 py-10 fade-in">
