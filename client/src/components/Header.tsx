@@ -20,10 +20,10 @@ export default function Header() {
                 <div className="container mx-auto px-4 flex justify-between items-center">
                     <div className="flex gap-6">
                         <span className="hover:text-white cursor-pointer transition">
-                            <i className="fas fa-phone-alt mr-2 text-gray-500"></i>Call Us: 033-4055-0555
+                            <i className="fas fa-phone-alt mr-2 text-gray-500"></i>Call Us: +91 9415409650
                         </span>
                         <span className="hover:text-white cursor-pointer transition">
-                            <i className="fas fa-envelope mr-2 text-gray-500"></i>sales@jpsenterprise.com
+                            <i className="fas fa-envelope mr-2 text-gray-500"></i>pawan@jpsenterprises.in
                         </span>
                     </div>
                     <div className="flex gap-6">
