@@ -9,6 +9,23 @@ export default function OrdersView() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [messageText, setMessageText] = useState('');
 
+    const handleWipeOrders = async () => {
+        if (!confirm("Are you sure you want to delete ALL orders? This cannot be undone.")) return;
+        try {
+            await fetch('/api/orders/wipe', { method: 'DELETE' });
+            window.location.reload();
+        } catch (error) {
+            console.error("Failed to wipe orders", error);
+            alert("Failed to wipe orders");
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        if (status === 'Shipped') return 'bg-green-100 text-green-800';
+        if (status === 'Cancelled') return 'bg-red-100 text-red-800';
+        return 'bg-yellow-100 text-yellow-800';
+    };
+
     const handleUpdateStatus = (id: string, status: string) => {
         updateOrderStatus(id, status);
         if (selectedOrder && selectedOrder.id === id) {
@@ -35,6 +52,12 @@ export default function OrdersView() {
     return (
         <>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold">Orders Management</h2>
+                    <button onClick={handleWipeOrders} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold text-sm uppercase tracking-wider transition shadow-sm">
+                        <i className="fas fa-trash mr-2"></i> Wipe All Orders
+                    </button>
+                </div>
                 <table className="w-full text-left">
                     <thead>
                         <tr className="text-xs uppercase text-gray-500 border-b bg-gray-50">

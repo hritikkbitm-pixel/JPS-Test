@@ -61,6 +61,12 @@ export default function CartPage() {
             return;
         }
 
+        // Validate Address
+        if (!shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip || !shippingAddress.phone) {
+            alert("Please fill in all required shipping address fields.");
+            return;
+        }
+
         // Save address if requested
         if (shouldSaveAddress) {
             try {

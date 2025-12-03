@@ -9,11 +9,13 @@ export interface IUser extends Document {
     role: 'user' | 'admin';
     provider: 'google' | 'credentials';
     addresses: {
-        street?: string;
+        label?: string;
+        line1?: string;
+        line2?: string;
         city?: string;
         state?: string;
-        zipCode?: string;
-        country?: string;
+        zip?: string;
+        phone?: string;
     }[];
     orders: mongoose.Types.ObjectId[];
     createdAt: Date;
@@ -49,11 +51,13 @@ const UserSchema = new mongoose.Schema<IUser>({
         required: true,
     },
     addresses: [{
-        street: String,
+        label: String,
+        line1: String,
+        line2: String,
         city: String,
         state: String,
-        zipCode: String,
-        country: String,
+        zip: String,
+        phone: String,
     }],
     orders: [{
         type: mongoose.Schema.Types.ObjectId,
