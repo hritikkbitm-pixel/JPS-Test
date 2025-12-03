@@ -13,26 +13,54 @@ export default function CartPage() {
     const { addOrder } = useShop();
     const router = useRouter();
 
-    const [step, setStep] = useState<'cart' | 'shipping' | 'payment'>('cart');
-    const [shippingAddress, setShippingAddress] = useState({
-        label: 'Home',
-        line1: '',
-        line2: '',
-        city: '',
-        state: '',
-        zip: '',
-        phone: ''
-    });
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+    const [shouldSaveAddress, setShouldSaveAddress] = useState(false);
 
-    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Fetch saved addresses on load
+    React.useEffect(() => {
+        if (user?.email) {
+            fetch('/api/user/address')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.addresses) {
+                        setSavedAddresses(data.addresses);
+                    }
+                })
+                .catch(err => console.error("Failed to load addresses", err));
+        }
+    }, [user]);
+
+    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
     };
 
-    const handlePlaceOrder = () => {
+    const handleSelectAddress = (index: number) => {
+        if (index === -1) {
+            // Clear form
+            setShippingAddress({ label: 'Home', line1: '', line2: '', city: '', state: '', zip: '', phone: '' });
+        } else {
+            setShippingAddress(savedAddresses[index]);
+        }
+    };
+
+    const handlePlaceOrder = async () => {
         if (!user) {
             alert("Please login to place an order.");
             router.push('/account');
             return;
+        }
+
+        // Save address if requested
+        if (shouldSaveAddress) {
+            try {
+                await fetch('/api/user/address', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: shippingAddress }),
+                });
+            } catch (err) {
+                console.error("Failed to save address", err);
+            }
         }
 
         const newOrder = {
@@ -131,7 +159,30 @@ export default function CartPage() {
                     {step === 'shipping' && (
                         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
                             <h2 className="text-xl font-bold mb-6">Shipping Address</h2>
+
+                            {/* Saved Addresses Dropdown */}
+                            {savedAddresses.length > 0 && (
+                                <div className="mb-6 bg-blue-50 p-4 rounded border border-blue-100">
+                                    <label className="block text-blue-800 text-sm font-bold mb-2">Select Saved Address</label>
+                                    <select
+                                        onChange={(e) => handleSelectAddress(Number(e.target.value))}
+                                        className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red bg-white"
+                                    >
+                                        <option value={-1}>-- Use a new address --</option>
+                                        {savedAddresses.map((addr, idx) => (
+                                            <option key={idx} value={idx}>
+                                                {addr.label} - {addr.line1}, {addr.city}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">Address Label (e.g. Home, Office)</label>
+                                    <input type="text" name="label" value={shippingAddress.label} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="Home" />
+                                </div>
                                 <div>
                                     <label className="block text-gray-700 text-sm font-bold mb-2">Address Line 1</label>
                                     <input type="text" name="line1" value={shippingAddress.line1} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="Street Address" />
@@ -155,6 +206,18 @@ export default function CartPage() {
                                 <div>
                                     <label className="block text-gray-700 text-sm font-bold mb-2">Phone</label>
                                     <input type="text" name="phone" value={shippingAddress.phone} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" />
+                                </div>
+
+                                <div className="md:col-span-2 mt-4">
+                                    <label className="flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={shouldSaveAddress}
+                                            onChange={(e) => setShouldSaveAddress(e.target.checked)}
+                                            className="mr-2 h-4 w-4 text-brand-red focus:ring-brand-red"
+                                        />
+                                        <span className="text-gray-700 font-bold">Save this address for future orders</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
