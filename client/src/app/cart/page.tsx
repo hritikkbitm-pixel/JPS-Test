@@ -13,6 +13,17 @@ export default function CartPage() {
     const { addOrder } = useShop();
     const router = useRouter();
 
+    const [step, setStep] = useState<'cart' | 'shipping' | 'payment'>('cart');
+    const [shippingAddress, setShippingAddress] = useState({
+        label: 'Home',
+        line1: '',
+        line2: '',
+        city: '',
+        state: '',
+        zip: '',
+        phone: ''
+    });
+
     const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
     const [shouldSaveAddress, setShouldSaveAddress] = useState(false);
 
