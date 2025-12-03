@@ -27,7 +27,7 @@ export default function Footer() {
                         <h4 className="text-white font-bold uppercase tracking-wider mb-6 text-sm">Store Info</h4>
                         <ul className="space-y-4 text-sm">
                             <li className="relative group cursor-pointer">
-                                <a href="https://maps.app.goo.gl/PcuEDN9OsXGCFfzLJ" target="_blank" rel="noopener noreferrer" className="flex items-start">
+                                <a href="https://www.google.com/maps/search/?api=1&query=Shop+7+and+11,+Upper+Ground+Floor,+Shree+Chambers,+Naza+Market,+Lalbagh,+Lucknow+226001" target="_blank" rel="noopener noreferrer" className="flex items-start">
                                     <i className="fas fa-map-marker-alt mt-1 mr-3 text-brand-red"></i>
                                     <span>Shop 7 and 11,<br />Upper Ground Floor, Shree Chambers<br />Naza Market, Lalbagh<br />Lucknow 226001</span>
                                 </a>
