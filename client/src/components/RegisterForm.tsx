@@ -23,7 +23,7 @@ export default function RegisterForm() {
 
         if (name && email && password) {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
                 const res = await fetch(`${apiUrl}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
