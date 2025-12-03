@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { products as initialProducts, orders as initialOrders, banners as initialBanners, initialCategories, Product, Order, Banner, Category } from '@/lib/data';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 interface ShopContextType {
     products: Product[];
