@@ -27,10 +27,10 @@ export default function Footer() {
                         <h4 className="text-white font-bold uppercase tracking-wider mb-6 text-sm">Store Info</h4>
                         <ul className="space-y-4 text-sm">
                             <li className="relative group cursor-pointer">
-                                <div className="flex items-start">
+                                <a href="https://maps.app.goo.gl/PcuEDN9OsXGCFfzLJ" target="_blank" rel="noopener noreferrer" className="flex items-start">
                                     <i className="fas fa-map-marker-alt mt-1 mr-3 text-brand-red"></i>
                                     <span>Shop 7 and 11,<br />Upper Ground Floor, Shree Chambers<br />Naza Market, Lalbagh<br />Lucknow 226001</span>
-                                </div>
+                                </a>
                                 {/* Map Popup */}
                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 w-80 h-64 bg-white p-1 shadow-2xl rounded-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border-2 border-brand-red">
                                     <iframe

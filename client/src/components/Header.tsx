@@ -19,12 +19,12 @@ export default function Header() {
             <div className="bg-black text-gray-400 text-[11px] font-medium py-2 hidden md:block tracking-wide">
                 <div className="container mx-auto px-4 flex justify-between items-center">
                     <div className="flex gap-6">
-                        <span className="hover:text-white cursor-pointer transition">
+                        <a href="tel:+919415409650" className="hover:text-white cursor-pointer transition">
                             <i className="fas fa-phone-alt mr-2 text-gray-500"></i>Call Us: +91 9415409650
-                        </span>
-                        <span className="hover:text-white cursor-pointer transition">
+                        </a>
+                        <a href="mailto:pawan@jpsenterprises.in" className="hover:text-white cursor-pointer transition">
                             <i className="fas fa-envelope mr-2 text-gray-500"></i>pawan@jpsenterprises.in
-                        </span>
+                        </a>
                     </div>
                     <div className="flex gap-6">
                         <span className="text-white font-bold animate-pulse">BLACK NOVEMBER DEALS LIVE!</span>
