@@ -27,7 +27,7 @@ export default function Footer() {
                         <h4 className="text-white font-bold uppercase tracking-wider mb-6 text-sm">Store Info</h4>
                         <ul className="space-y-4 text-sm">
                             <li className="relative group cursor-pointer">
-                                <a href="https://www.google.com/maps/search/?api=1&query=Shop+7+and+11,+Upper+Ground+Floor,+Shree+Chambers,+Naza+Market,+Lalbagh,+Lucknow+226001" target="_blank" rel="noopener noreferrer" className="flex items-start">
+                                <a href="https://www.google.com/maps/place/JPS+Enterprises/@26.8487471,80.9386101,17z/data=!3m2!4b1!5s0x399bfd09d877da2d:0xcc31b89af2b941b5!4m6!3m5!1s0x399bfda7c321361d:0x78b91ac21523ac7!8m2!3d26.8487471!4d80.941185!16s%2Fg%2F1td6dwv7?entry=ttu&g_ep=EgoyMDI1MTIwMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" className="flex items-start">
                                     <i className="fas fa-map-marker-alt mt-1 mr-3 text-brand-red"></i>
                                     <span>Shop 7 and 11,<br />Upper Ground Floor, Shree Chambers<br />Naza Market, Lalbagh<br />Lucknow 226001</span>
                                 </a>
