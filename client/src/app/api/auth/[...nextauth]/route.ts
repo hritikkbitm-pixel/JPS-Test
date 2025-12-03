@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
 
 const handler = NextAuth({
     providers: [
@@ -16,22 +18,31 @@ const handler = NextAuth({
             },
             async authorize(credentials) {
                 try {
-                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-                    const res = await fetch(`${apiUrl}/auth/login`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            email: credentials?.email,
-                            password: credentials?.password,
-                        }),
-                    });
+                    await dbConnect();
 
-                    const user = await res.json();
-
-                    if (res.ok && user) {
-                        return user;
+                    if (!credentials?.email || !credentials?.password) {
+                        throw new Error('Please provide email and password');
                     }
-                    return null;
+
+                    const user = await User.findOne({ email: credentials.email }).select('+password');
+
+                    if (!user) {
+                        throw new Error('Invalid credentials');
+                    }
+
+                    const isMatch = await user.matchPassword(credentials.password);
+
+                    if (!isMatch) {
+                        throw new Error('Invalid credentials');
+                    }
+
+                    return {
+                        _id: user._id.toString(),
+                        name: user.name,
+                        email: user.email,
+                        image: user.picture,
+                        role: user.role,
+                    };
                 } catch (error) {
                     console.error("Login error:", error);
                     return null;
