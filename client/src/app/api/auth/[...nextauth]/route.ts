@@ -37,11 +37,13 @@ const handler = NextAuth({
                     }
 
                     return {
+                        id: user._id.toString(),
                         _id: user._id.toString(),
                         name: user.name,
                         email: user.email,
                         image: user.picture,
                         role: user.role,
+                        token: '', // Add token to satisfy type definition
                     };
                 } catch (error) {
                     console.error("Login error:", error);
