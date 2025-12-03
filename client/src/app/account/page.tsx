@@ -52,6 +52,52 @@ export default function AccountPage() {
         );
     }
 
+    // Fetch addresses when tab changes to addresses
+    React.useEffect(() => {
+        if (activeTab === 'addresses' && user?.email) {
+            fetch('/api/user/address')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.addresses) {
+                        // Update local user state with fresh addresses
+                        // This assumes updateUser merges or we might need a local state for addresses if we don't want to touch global user
+                        // For now, let's use a local state for display to be safe and fast
+                        setLocalAddresses(data.addresses);
+                    }
+                })
+                .catch(err => console.error("Failed to load addresses", err));
+        }
+    }, [activeTab, user]);
+
+    const [localAddresses, setLocalAddresses] = useState<any[]>([]);
+
+    // Sync local addresses with user.addresses initially
+    React.useEffect(() => {
+        if (user?.addresses) {
+            setLocalAddresses(user.addresses);
+        }
+    }, [user]);
+
+    const handleDeleteAddress = async (index: number) => {
+        if (!confirm("Are you sure you want to delete this address?")) return;
+
+        try {
+            const res = await fetch('/api/user/address', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index }),
+            });
+            const data = await res.json();
+            if (data.addresses) {
+                setLocalAddresses(data.addresses);
+                // Optionally update global user context if needed, but local display is enough for now
+            }
+        } catch (err) {
+            console.error("Failed to delete address", err);
+            alert("Failed to delete address");
+        }
+    };
+
     return (
         <div className="container mx-auto px-4 py-10 fade-in">
             <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b pb-4">
@@ -148,12 +194,12 @@ export default function AccountPage() {
                     {activeTab === 'addresses' && (
                         <div className="space-y-4">
                             <h3 className="text-xl font-bold mb-4">Saved Addresses</h3>
-                            {user.addresses && user.addresses.length > 0 ? (
+                            {localAddresses && localAddresses.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {user.addresses.map((addr, idx) => (
+                                    {localAddresses.map((addr, idx) => (
                                         <div key={idx} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm relative group">
                                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition">
-                                                <button className="text-gray-400 hover:text-red-600"><i className="fas fa-trash"></i></button>
+                                                <button onClick={() => handleDeleteAddress(idx)} className="text-gray-400 hover:text-red-600"><i className="fas fa-trash"></i></button>
                                             </div>
                                             <div className="font-bold text-gray-800 mb-2">{addr.label}</div>
                                             <div className="text-sm text-gray-600 space-y-1">
