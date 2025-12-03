@@ -4,10 +4,11 @@ import Order from '@/models/Order';
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
     try {
         await dbConnect();
+        const params = await props.params;
         const { id } = params;
         const body = await request.json();
 
