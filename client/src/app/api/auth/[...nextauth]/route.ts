@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 
-const handler = NextAuth({
+export const authOptions: any = {
     providers: [
         GoogleProvider({
             clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
@@ -59,7 +59,7 @@ const handler = NextAuth({
         })
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user }: any) {
             if (user) {
                 token.id = user._id;
                 token.role = user.role;
@@ -67,7 +67,7 @@ const handler = NextAuth({
             }
             return token;
         },
-        async session({ session, token }) {
+        async session({ session, token }: any) {
             if (session.user) {
                 session.user.id = token.id;
                 session.user.role = token.role;
@@ -82,6 +82,8 @@ const handler = NextAuth({
     session: {
         strategy: "jwt",
     }
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
