@@ -1,24 +1,14 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/dbConnect';
-import Category from '@/models/Category';
+import dbConnect from '@/lib/db';
+import { Category } from '@/lib/models';
 
 export async function GET() {
     try {
         await dbConnect();
         const categories = await Category.find({});
         return NextResponse.json(categories);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-}
-
-export async function POST(request: Request) {
-    try {
-        await dbConnect();
-        const body = await request.json();
-        const category = await Category.create(body);
-        return NextResponse.json(category, { status: 201 });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
     }
 }
