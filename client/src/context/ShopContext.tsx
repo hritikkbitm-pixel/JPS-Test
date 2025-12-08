@@ -23,6 +23,7 @@ interface ShopContextType {
     updateOrderStatus: (orderId: string, status: string) => void;
     addOrderMessage: (orderId: string, text: string, sender: string) => void;
     toggleFeatured: (productId: string) => void;
+    isLoading: boolean;
 }
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
@@ -32,6 +33,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     const [orders, setOrders] = useState<Order[]>([]);
     const [banners, setBanners] = useState<Banner[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+
+    const [isLoading, setIsLoading] = useState(true);
+
 
     // Helper to ensure banners have IDs
     const ensureIds = (list: Banner[]) => list.map(b => ({
@@ -50,6 +54,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         return { 'x-user-email': '' };
     };
 
+
+
     // Load banners from API
     useEffect(() => {
         const fetchBanners = async () => {
@@ -61,7 +67,6 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                         setBanners(data);
                     } else {
                         setBanners(ensureIds(initialBanners || []));
-                        // Seed initial banners
                         initialBanners.forEach(async (banner) => {
                             await fetch(`${API_URL}/banners`, {
                                 method: 'POST',
@@ -82,6 +87,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     // Load products from API
     useEffect(() => {
         const fetchProducts = async () => {
+            setIsLoading(true);
             try {
                 const res = await fetch(`${API_URL}/products`);
                 if (res.ok) {
@@ -114,6 +120,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                 } else {
                     setProductsState(initialProducts);
                 }
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchProducts();
@@ -123,29 +131,30 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
+                console.log('Fetching categories...');
                 const res = await fetch(`${API_URL}/categories`);
+                console.log('Categories response status:', res.status);
                 if (res.ok) {
                     const data = await res.json();
+                    console.log('Categories data received:', data);
                     if (data.length > 0) {
-                        setCategories(data);
+                        setCategories([...data]);
                     } else {
-                        setCategories(initialCategories);
-                        initialCategories.forEach(async (cat) => {
-                            await fetch(`${API_URL}/categories`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(cat)
-                            });
-                        });
+                        console.log('Categories data is empty, setting empty array.');
+                        setCategories([]);
                     }
+                } else {
+                    console.error('Categories fetch failed:', res.statusText);
                 }
             } catch (error) {
                 console.error('Failed to fetch categories:', error);
                 const savedCategories = localStorage.getItem('shop_categories');
                 if (savedCategories) {
+                    console.log('Loading categories from local storage');
                     setCategories(JSON.parse(savedCategories));
                 } else {
-                    setCategories(initialCategories);
+                    console.log('No local storage categories found, setting empty.');
+                    setCategories([]);
                 }
             }
         };
@@ -337,26 +346,29 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         ));
     };
 
+    const value = React.useMemo(() => ({
+        products,
+        orders,
+        banners,
+        categories,
+        addProduct,
+        updateProduct,
+        deleteProduct,
+        setProducts,
+        addBanner,
+        removeBanner,
+        updateCategory,
+        addCategory,
+        deleteCategory,
+        addOrder,
+        updateOrderStatus,
+        addOrderMessage,
+        toggleFeatured,
+        isLoading
+    }), [products, orders, banners, categories, isLoading]);
+
     return (
-        <ShopContext.Provider value={{
-            products,
-            orders,
-            banners,
-            categories,
-            addProduct,
-            updateProduct,
-            deleteProduct,
-            setProducts,
-            addBanner,
-            removeBanner,
-            updateCategory,
-            addCategory,
-            deleteCategory,
-            addOrder,
-            updateOrderStatus,
-            addOrderMessage,
-            toggleFeatured
-        }}>
+        <ShopContext.Provider value={value}>
             {children}
         </ShopContext.Provider>
     );

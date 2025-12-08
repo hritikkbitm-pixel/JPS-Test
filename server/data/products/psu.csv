@@ -1,0 +1,6 @@
+"id","brand","series","model","full_name","price","stock_status","image_url","wattage","efficiency_rating","modularity","atx_version","pci_express_5_support","eps_connectors","pci_connectors","sata_connectors","fan_size","smart_fan_control","build_quality_score","performance_score","recommended_for_gpus","short_description","key_features","long_description","warranty"
+"psu-gigabyte-p550b","Gigabyte","P Series","P550B","Gigabyte P550B 550W Bronze","3800","In Stock","","550","Bronze","Non-Modular","","","","","","120mm","","","","","","","","3 Years"
+"psu-msi-a1000g","MSI","MPG","A1000G","MSI MPG A1000G PCIE5 1000W Gold","14500","In Stock","","1000","Gold","Fully Modular","3.0","Yes","","","","135mm","","","","","","","","10 Years"
+"psu-thermaltake-gf1","Thermaltake","Toughpower","GF1 750","Thermaltake Toughpower GF1 750W Gold","8900","In Stock","","750","Gold","Fully Modular","","","","","","140mm","","","","","","","","10 Years"
+"psu-silverstone-sx700","SilverStone","SX","SX700-G","SilverStone SX700-G 700W SFX Gold","11200","In Stock","","700","Gold","Fully Modular","","","","","","92mm","","","","","","","","3 Years"
+"psu-antec-neoeco-650","Antec","NeoECO","650M","Antec NeoECO 650M V2 Bronze","4800","In Stock","","650","Bronze","Semi-Modular","","","","","","120mm","","","","","","","","5 Years"

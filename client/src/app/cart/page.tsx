@@ -14,7 +14,10 @@ export default function CartPage() {
     const router = useRouter();
 
     const [step, setStep] = useState<'cart' | 'shipping' | 'payment'>('cart');
+    const [paymentMethod, setPaymentMethod] = useState('COD');
     const [shippingAddress, setShippingAddress] = useState({
+        fullName: '',
+        email: '',
         label: 'Home',
         line1: '',
         line2: '',
@@ -30,6 +33,9 @@ export default function CartPage() {
     // Fetch saved addresses on load
     React.useEffect(() => {
         if (user?.email) {
+            // Pre-fill email from user if available
+            setShippingAddress(prev => ({ ...prev, email: user.email || '' }));
+
             fetch('/api/user/address')
                 .then(res => res.json())
                 .then(data => {
@@ -47,10 +53,10 @@ export default function CartPage() {
 
     const handleSelectAddress = (index: number) => {
         if (index === -1) {
-            // Clear form
-            setShippingAddress({ label: 'Home', line1: '', line2: '', city: '', state: '', zip: '', phone: '' });
+            // Clear form (keep email if logged in)
+            setShippingAddress({ fullName: '', email: user?.email || '', label: 'Home', line1: '', line2: '', city: '', state: '', zip: '', phone: '' });
         } else {
-            setShippingAddress(savedAddresses[index]);
+            setShippingAddress({ ...savedAddresses[index], email: user?.email || savedAddresses[index].email || '' });
         }
     };
 
@@ -62,10 +68,80 @@ export default function CartPage() {
         }
 
         // Validate Address
-        if (!shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip || !shippingAddress.phone) {
-            alert("Please fill in all required shipping address fields.");
+        if (!shippingAddress.fullName || !shippingAddress.email || !shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip || !shippingAddress.phone) {
+            alert("Please fill in all required fields (Name, Email, Address, Phone).");
             return;
         }
+
+        // Order Creation Logic
+        const createOrderObject = () => ({
+            id: 'ORD-' + Math.floor(Math.random() * 100000),
+            email: shippingAddress.email,
+            date: new Date().toLocaleDateString(),
+            items: [...cart],
+            total: cartTotal,
+            status: 'Processing',
+            shippingAddress: shippingAddress,
+            paymentMethod: paymentMethod,
+            messages: [],
+            invoice: '#'
+        });
+
+        // 1. Handle Online Payments First
+        if (paymentMethod === 'PHONEPE') {
+            try {
+                const res = await fetch('/api/payment/phonepe/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: cartTotal,
+                        userId: user.email,
+                        mobileNumber: shippingAddress.phone
+                    })
+                });
+                const data = await res.json();
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    alert('PhonePe initialization failed.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Payment Error');
+            }
+            return; // Stop here, redirecting
+        }
+
+        if (paymentMethod === 'PAYTM') {
+            try {
+                const res = await fetch('/api/payment/paytm/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: cartTotal,
+                        email: shippingAddress.email,
+                        mobile: shippingAddress.phone
+                    })
+                });
+                const data = await res.json();
+                if (data.txnToken) {
+                    // Initialize Paytm CheckoutJS
+                    // Note: You need to load Paytm Script in layout or here. 
+                    // For now, assuming basic redirect or logic as per user snippet.
+                    // If user wanted redirect flow:
+                    alert(`Paytm Init Success. Token: ${data.txnToken}. (Actual CheckoutJS integration required here)`);
+                    // window.Paytm.CheckoutJS.init(...)
+                } else {
+                    alert('Paytm initialization failed.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Payment Error');
+            }
+            return;
+        }
+
+        // 2. Handle COD (Save Order Locally)
 
         // Save address if requested
         if (shouldSaveAddress) {
@@ -80,17 +156,7 @@ export default function CartPage() {
             }
         }
 
-        const newOrder = {
-            id: 'ORD-' + Math.floor(Math.random() * 100000),
-            email: user.email,
-            date: new Date().toLocaleDateString(),
-            items: [...cart],
-            total: cartTotal,
-            status: 'Processing',
-            shippingAddress: shippingAddress,
-            messages: [],
-            invoice: '#'
-        };
+        const newOrder = createOrderObject();
 
         // Update user orders
         const updatedOrders = user.orders ? [...user.orders, newOrder] : [newOrder];
@@ -103,7 +169,7 @@ export default function CartPage() {
         clearCart();
 
         // Redirect to account
-        alert("Order placed successfully!");
+        alert("Order placed successfully via Cash on Delivery!");
         router.push('/account');
     };
 
@@ -196,12 +262,20 @@ export default function CartPage() {
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-1">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">Full Name <span className="text-red-500">*</span></label>
+                                    <input type="text" name="fullName" value={shippingAddress.fullName} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="John Doe" required />
+                                </div>
+                                <div className="md:col-span-1">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">Email Address <span className="text-red-500">*</span></label>
+                                    <input type="email" name="email" value={shippingAddress.email} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="john@example.com" required />
+                                </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-gray-700 text-sm font-bold mb-2">Address Label (e.g. Home, Office)</label>
                                     <input type="text" name="label" value={shippingAddress.label} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="Home" />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">Address Line 1</label>
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">Address Line 1 <span className="text-red-500">*</span></label>
                                     <input type="text" name="line1" value={shippingAddress.line1} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="Street Address" />
                                 </div>
                                 <div>
@@ -209,19 +283,19 @@ export default function CartPage() {
                                     <input type="text" name="line2" value={shippingAddress.line2} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" placeholder="Apartment, Suite, etc." />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">City</label>
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">City <span className="text-red-500">*</span></label>
                                     <input type="text" name="city" value={shippingAddress.city} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">State</label>
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">State <span className="text-red-500">*</span></label>
                                     <input type="text" name="state" value={shippingAddress.state} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">ZIP Code</label>
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">ZIP Code <span className="text-red-500">*</span></label>
                                     <input type="text" name="zip" value={shippingAddress.zip} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-700 text-sm font-bold mb-2">Phone</label>
+                                    <label className="block text-gray-700 text-sm font-bold mb-2">Phone <span className="text-red-500">*</span></label>
                                     <input type="text" name="phone" value={shippingAddress.phone} onChange={handleAddressChange} className="w-full border rounded px-3 py-2 focus:outline-none focus:border-brand-red" />
                                 </div>
 
@@ -244,17 +318,46 @@ export default function CartPage() {
                         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
                             <h2 className="text-xl font-bold mb-6">Payment Method</h2>
                             <div className="space-y-4">
-                                <label className="flex items-center p-4 border rounded cursor-pointer bg-gray-50 border-brand-red">
-                                    <input type="radio" name="payment" className="mr-3 text-brand-red focus:ring-brand-red" defaultChecked />
+                                <label className={`flex items-center p-4 border rounded cursor-pointer ${paymentMethod === 'COD' ? 'bg-indigo-50 border-brand-red ring-1 ring-brand-red' : 'bg-white hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        value="COD"
+                                        checked={paymentMethod === 'COD'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="mr-3 h-4 w-4 text-brand-red focus:ring-brand-red"
+                                    />
                                     <span className="font-bold">Cash on Delivery</span>
                                 </label>
-                                <label className="flex items-center p-4 border rounded cursor-not-allowed opacity-50">
-                                    <input type="radio" name="payment" className="mr-3" disabled />
-                                    <span>Credit/Debit Card (Coming Soon)</span>
+
+                                <label className={`flex items-center p-4 border rounded cursor-pointer ${paymentMethod === 'PHONEPE' ? 'bg-indigo-50 border-brand-red ring-1 ring-brand-red' : 'bg-white hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        value="PHONEPE"
+                                        checked={paymentMethod === 'PHONEPE'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="mr-3 h-4 w-4 text-brand-red focus:ring-brand-red"
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="font-bold">PhonePe</span>
+                                        <span className="text-xs text-gray-500">UPI, Cards, NetBanking</span>
+                                    </div>
                                 </label>
-                                <label className="flex items-center p-4 border rounded cursor-not-allowed opacity-50">
-                                    <input type="radio" name="payment" className="mr-3" disabled />
-                                    <span>UPI / Net Banking (Coming Soon)</span>
+
+                                <label className={`flex items-center p-4 border rounded cursor-pointer ${paymentMethod === 'PAYTM' ? 'bg-indigo-50 border-brand-red ring-1 ring-brand-red' : 'bg-white hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        value="PAYTM"
+                                        checked={paymentMethod === 'PAYTM'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="mr-3 h-4 w-4 text-brand-red focus:ring-brand-red"
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="font-bold">Paytm</span>
+                                        <span className="text-xs text-gray-500">Wallet, UPI, Cards</span>
+                                    </div>
                                 </label>
                             </div>
                         </div>

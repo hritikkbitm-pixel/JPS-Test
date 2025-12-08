@@ -50,29 +50,66 @@ export default function CategoriesView() {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Image URL</label>
-                        <input
-                            type="text"
-                            value={categoryForm.image}
-                            onChange={e => setCategoryForm({ ...categoryForm, image: e.target.value })}
-                            className="w-full border p-2 rounded text-sm focus:outline-none focus:border-brand-red"
-                            placeholder="https://..."
-                        />
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Image</label>
+                        <div className="flex flex-col gap-2">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                            setCategoryForm({ ...categoryForm, image: reader.result as string });
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }
+                                }}
+                                className="w-full border p-2 rounded text-sm focus:outline-none focus:border-brand-red"
+                            />
+                            <input
+                                type="text"
+                                value={categoryForm.image}
+                                onChange={e => setCategoryForm({ ...categoryForm, image: e.target.value })}
+                                className="w-full border p-2 rounded text-sm focus:outline-none focus:border-brand-red"
+                                placeholder="Or paste Image URL / Base64"
+                            />
+                        </div>
+                        {categoryForm.image && (
+                            <div className="mt-2">
+                                <img src={categoryForm.image} alt="Preview" className="w-full h-32 object-cover rounded border" />
+                            </div>
+                        )}
                     </div>
-                    <button type="submit" className="w-full bg-brand-red text-white font-bold py-2 rounded hover:bg-red-700 transition">ADD</button>
+                    <button type="submit" className="w-full bg-brand-red text-white font-bold py-2 rounded hover:bg-red-700 transition">ADD CATEGORY</button>
                 </form>
             </div>
 
             {/* Category List */}
             <div>
-                {categories.map(cat => (
+                {categories.map((cat: Category) => (
                     <div key={cat.id} className="bg-white p-4 rounded shadow flex gap-4 items-start border border-gray-200 mb-4">
                         <img src={cat.image} alt={cat.label} className="w-24 h-24 object-cover rounded bg-gray-100" />
                         <div className="flex-grow">
                             <h4 className="font-bold text-lg mb-2">{cat.label}</h4>
                             <div className="mb-2">
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Image URL</label>
-                                <div className="flex gap-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Image</label>
+                                <div className="flex flex-col gap-2">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    updateCategory({ ...cat, image: reader.result as string });
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                        className="w-full border p-2 rounded text-sm focus:outline-none focus:border-brand-red"
+                                    />
                                     <input
                                         type="text"
                                         defaultValue={cat.image}
@@ -82,6 +119,7 @@ export default function CategoriesView() {
                                             }
                                         }}
                                         className="w-full border p-2 rounded text-sm focus:outline-none focus:border-brand-red"
+                                        placeholder="Image URL or Base64"
                                     />
                                 </div>
                             </div>

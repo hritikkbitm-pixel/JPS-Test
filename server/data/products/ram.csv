@@ -1,0 +1,6 @@
+"id","brand","series","model","full_name","price","stock_status","image_url","memory_type","capacity_per_stick","sticks","total_capacity","speed","cas_latency","channels","voltage","ecc_support","xmp_expo_support","heat_spreader_color","height","performance_score","short_description","key_features","long_description","warranty"
+"ram-gskill-trident","G.Skill","","","G.Skill Trident Z5 RGB 32GB (2x16GB) DDR5 6000MHz","10400","In Stock","","DDR5","","","32.0","","","","","","","","","","","","",""
+"ram-corsair-vengeance-ddr5","Corsair","","","Corsair Vengeance 32GB (1x32GB) DDR5 5200MHz","9000","In Stock","","DDR5","","","32.0","","","","","","","","","","","","",""
+"ram-adata-lancer","ADATA","","","ADATA XPG Lancer RGB 16GB (1x16GB) DDR5 5200MHz","4620","In Stock","","DDR5","","","16.0","","","","","","","","","","","","",""
+"ram-corsair-vengeance-ddr4","Corsair","","","Corsair Vengeance LPX 16GB (1x16GB) DDR4 3200MHz","3500","In Stock","","DDR4","","","16.0","","","","","","","","","","","","",""
+"ram-gskill-ripjaws","G.Skill","","","G.Skill Ripjaws V 16GB (2x8GB) DDR4 3600MHz","3822","In Stock","","DDR4","","","16.0","","","","","","","","","","","","",""

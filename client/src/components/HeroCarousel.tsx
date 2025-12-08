@@ -36,13 +36,21 @@ export default function HeroCarousel({ banners }: HeroCarouselProps) {
                 <div id="carousel-track" className="w-full h-full relative">
                     {banners.map((b, i) => (
                         <div key={i} className={`carousel-slide absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-                            <img src={b.image} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-700" alt={b.title} />
-                            <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-10">
+                            {/* Banner Background */}
+                            <img src={b.image || "https://via.placeholder.com/1200x400?text=No+Banner"} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-700" alt={b.title} />
+
+                            {/* Banner Content & Link */}
+                            <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-10 pointer-events-none">
                                 <span className="text-brand-red font-bold tracking-widest uppercase mb-1 md:mb-2 text-xs md:text-base">Featured</span>
                                 <h2 className="text-2xl md:text-5xl font-black text-white mb-2 md:mb-4 leading-tight line-clamp-2">{b.title}</h2>
                                 <p className="text-gray-300 mb-4 md:mb-6 max-w-md text-xs md:text-base line-clamp-2">{b.sub}</p>
-                                <button className="bg-white text-black px-4 py-2 md:px-8 md:py-3 font-bold w-max hover:bg-brand-red hover:text-white transition uppercase tracking-wider text-xs md:text-sm">Shop Now</button>
+                                <Link href={b.target || '#'} className="bg-white text-black px-4 py-2 md:px-8 md:py-3 font-bold w-max hover:bg-brand-red hover:text-white transition uppercase tracking-wider text-xs md:text-sm pointer-events-auto inline-block text-center cursor-pointer relative z-20">
+                                    Shop Now
+                                </Link>
                             </div>
+
+                            {/* Clickable Overlay for entire banner (behind buttons) */}
+                            <Link href={b.target || '#'} className="absolute inset-0 z-0" aria-label={`View ${b.title}`}></Link>
                         </div>
                     ))}
                 </div>

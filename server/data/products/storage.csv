@@ -1,0 +1,6 @@
+"id","brand","series","model","full_name","price","stock_status","image_url","storage_type","interface","form_factor","capacity","read_speed","write_speed","nand_type","dram_cache","endurance_tbw","mtbf","controller","performance_score","boot_drive_recommended","short_description","key_features","long_description","warranty"
+"ssd-samsung-990","Samsung","","","Samsung 990 Pro 1TB NVMe","11999","In Stock","","","PCIe Gen4","M.2","1000.0","","","","","","","","","","","","",""
+"ssd-wd-sn850x","WD","","","WD_BLACK SN850X 1TB NVMe","11899","In Stock","","","PCIe Gen4","M.2","1000.0","","","","","","","","","","","","",""
+"ssd-crucial-p3p","Crucial","","","Crucial P3 Plus 1TB NVMe","7140","In Stock","","","PCIe Gen4","M.2","1000.0","","","","","","","","","","","","",""
+"ssd-kingston-kc3000","Kingston","","","Kingston KC3000 1TB NVMe","12599","In Stock","","","PCIe Gen4","M.2","1000.0","","","","","","","","","","","","",""
+"ssd-wd-sn580","WD","","","WD Blue SN580 1TB NVMe","6000","In Stock","","","PCIe Gen4","M.2","1000.0","","","","","","","","","","","","",""

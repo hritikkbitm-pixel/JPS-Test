@@ -61,15 +61,26 @@ export default function Header() {
 
                         {/* Search Bar */}
                         <div className="w-full md:w-5/12 relative group">
-                            <div className="flex h-11">
-                                <input type="text"
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const form = e.target as HTMLFormElement;
+                                const input = form.elements.namedItem('q') as HTMLInputElement;
+                                if (input.value.trim()) {
+                                    window.location.href = `/search?q=${encodeURIComponent(input.value.trim())}`;
+                                }
+                            }} className="flex h-11">
+                                <input
+                                    type="text"
+                                    name="q"
                                     className="w-full border border-gray-300 border-r-0 rounded-l-md px-4 text-sm focus:outline-none focus:border-brand-red transition bg-gray-50 focus:bg-white"
-                                    placeholder="Search for products (e.g., 'Ultra 9', 'RTX 5090')..." />
+                                    placeholder="Search for products (e.g., 'Ultra 9', 'RTX 5090')..."
+                                />
                                 <button
+                                    type="submit"
                                     className="bg-brand-dark text-white px-6 rounded-r-md hover:bg-brand-red transition duration-300">
                                     <i className="fas fa-search"></i>
                                 </button>
-                            </div>
+                            </form>
                         </div>
 
                         {/* Action Icons & ADMIN BUTTON */}

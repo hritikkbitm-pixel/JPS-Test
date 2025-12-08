@@ -91,17 +91,27 @@ export default function AdminDataTools() {
 
                 const products = await parseCSV(csvText);
 
+                // Deduplicate products by ID
+                const uniqueProductsMap = new Map();
+                products.forEach(p => {
+                    if (p.id) {
+                        uniqueProductsMap.set(p.id, p);
+                    }
+                });
+                const uniqueProducts = Array.from(uniqueProductsMap.values());
+
                 // LOUD DEBUGGING - Mapped Products
-                if (products.length > 0) {
-                    console.log("Mapped Product 1:", products[0]);
-                    console.log("Mapped Product 1 Specs:", products[0].specs);
+                if (uniqueProducts.length > 0) {
+                    console.log("Mapped Product 1:", uniqueProducts[0]);
+                    console.log("Mapped Product 1 Specs:", uniqueProducts[0].specs);
+                    console.log(`Removed ${products.length - uniqueProducts.length} duplicates.`);
                 } else {
                     console.warn("Parsed products array is empty!");
                 }
 
                 // Send parsed JSON to server
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-                const response = await axios.post(`${apiUrl}/products/batch`, { products }, {
+                const response = await axios.post(`${apiUrl}/products/batch`, { products: uniqueProducts }, {
                     headers: {
                         'Content-Type': 'application/json',
                         'x-user-email': user?.email || ''

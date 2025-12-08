@@ -32,6 +32,7 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/banners', require('./routes/banners'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/audit', require('./routes/audit'));
+app.use('/api/payment', require('./routes/payment'));
 
 app.get('/', (req, res) => {
     res.send('JPS Store API is running');
