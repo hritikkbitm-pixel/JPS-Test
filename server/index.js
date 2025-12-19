@@ -17,14 +17,20 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Database Connection
 const syncInventory = require('./utils/syncInventory');
 
+let lastDbError = null;
+
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jps-store')
     .then(() => {
         console.log('MongoDB connected');
+        lastDbError = null;
         // Sync inventory on startup
         syncInventory();
     })
-    .catch(err => console.error('MongoDB connection error:', err));
+    .catch(err => {
+        console.error('MongoDB connection error:', err);
+        lastDbError = err.message;
+    });
 
 app.get('/api/db-test', async (req, res) => {
     try {
@@ -33,7 +39,8 @@ app.get('/api/db-test', async (req, res) => {
         res.json({
             status: states[state] || 'unknown',
             dbName: mongoose.connection.name,
-            host: mongoose.connection.host
+            host: mongoose.connection.host,
+            lastError: lastDbError
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
