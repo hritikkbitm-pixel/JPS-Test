@@ -9,10 +9,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb://localhost:27017/jps-store';
+
 console.log('--- Environment Check ---');
 console.log('MONGODB_URI present:', !!process.env.MONGODB_URI);
-if (process.env.MONGODB_URI) {
-    console.log('MONGODB_URI starts with:', process.env.MONGODB_URI.substring(0, 15) + '...');
+console.log('MONGO_URL present:', !!process.env.MONGO_URL);
+if (MONGO_URI.startsWith('mongodb+srv')) {
+    console.log('Using Atlas Connection String');
 }
 console.log('-------------------------');
 
@@ -27,7 +30,7 @@ const syncInventory = require('./utils/syncInventory');
 let lastDbError = null;
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jps-store')
+mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('MongoDB connected');
         lastDbError = null;
