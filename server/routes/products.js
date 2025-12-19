@@ -51,6 +51,68 @@ router.get('/', async (req, res) => {
         const products = await Product.find(query);
         res.json(products);
     } catch (err) {
+        console.error('Get Products Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Add Product to Mongo (and attempt CSV sync)
+router.post('/', checkAuth, async (req, res) => {
+    try {
+        const productData = req.body;
+        if (!productData.id) productData.id = Math.random().toString(36).substr(2, 9);
+
+        // Save to Mongo
+        const product = new Product(productData);
+        await product.save();
+
+        // Optional: Also add to CSV if category matches
+        const csvPath = getCsvPath(productData.category);
+        if (csvPath && fs.existsSync(csvPath)) {
+            const rows = [];
+            await new Promise((resolve) => {
+                fs.createReadStream(csvPath)
+                    .pipe(csv())
+                    .on('data', row => rows.push(row))
+                    .on('end', resolve)
+                    .on('error', () => resolve()); // Ignore read errors for append
+            });
+            rows.push(productData);
+            const json2csvParser = new Parser({ fields: Object.keys(rows[0] || productData) });
+            const csvData = json2csvParser.parse(rows);
+            fs.writeFileSync(csvPath, csvData);
+        }
+
+        res.status(201).json(product);
+    } catch (err) {
+        console.error('Create Product Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Batch Upload JSON Products
+router.post('/batch', checkAuth, async (req, res) => {
+    try {
+        const { products } = req.body;
+        if (!Array.isArray(products)) return res.status(400).json({ message: 'Invalid products data' });
+
+        console.log(`📦 Processing batch upload of ${products.length} items...`);
+
+        // Upsert to Mongo
+        for (const prod of products) {
+            await Product.findOneAndUpdate(
+                { id: prod.id },
+                prod,
+                { upsert: true, new: true }
+            );
+        }
+
+        // Trigger Sync
+        await syncInventory();
+
+        res.json({ message: `Successfully processed ${products.length} products.` });
+    } catch (err) {
+        console.error('Batch Upload Error:', err);
         res.status(500).json({ message: err.message });
     }
 });
