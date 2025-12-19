@@ -26,7 +26,7 @@ const syncInventory = async () => {
         if (category === 'motherboards') dbCategory = 'motherboard';
         if (category === 'gpus') dbCategory = 'gpu';
         if (category === 'cabinets') dbCategory = 'case';
-        if (category === 'coolers') dbCategory = 'cooler';
+        if (category === 'coolers') dbCategory = 'cooling';
 
         const results = [];
 

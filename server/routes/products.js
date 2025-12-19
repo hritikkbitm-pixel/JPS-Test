@@ -24,7 +24,7 @@ const getCsvPath = (category) => {
     else if (cat === 'storage') filename = 'storage.csv';
     else if (cat === 'psu') filename = 'psu.csv';
     else if (cat === 'case') filename = 'cabinets.csv';
-    else if (cat === 'cooler') filename = 'coolers.csv';
+    else if (cat === 'cooling' || cat === 'cooler') filename = 'coolers.csv';
     else return null;
 
     return path.join(PRODUCTS_DIR, filename);
@@ -100,6 +100,10 @@ router.post('/batch', checkAuth, async (req, res) => {
 
         // Upsert to Mongo
         for (const prod of products) {
+            // Ensure category is lowercase and consistent
+            if (prod.category) prod.category = prod.category.toLowerCase();
+            if (prod.category === 'cooler') prod.category = 'cooling';
+
             await Product.findOneAndUpdate(
                 { id: prod.id },
                 prod,
@@ -107,10 +111,11 @@ router.post('/batch', checkAuth, async (req, res) => {
             );
         }
 
-        // Trigger Sync
-        await syncInventory();
+        // NOTE: We do NOT trigger syncInventory here because it would
+        // read the OLD files from disk and overwrite our fresh updates.
+        // User should update the CSVs manually on disk for persistence on Render.
 
-        res.json({ message: `Successfully processed ${products.length} products.` });
+        res.json({ message: `Successfully processed ${products.length} products to database.` });
     } catch (err) {
         console.error('Batch Upload Error:', err);
         res.status(500).json({ message: err.message });
