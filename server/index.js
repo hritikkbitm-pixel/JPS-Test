@@ -26,6 +26,20 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jps-store
     })
     .catch(err => console.error('MongoDB connection error:', err));
 
+app.get('/api/db-test', async (req, res) => {
+    try {
+        const state = mongoose.connection.readyState;
+        const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+        res.json({
+            status: states[state] || 'unknown',
+            dbName: mongoose.connection.name,
+            host: mongoose.connection.host
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Routes
 app.use('/api/products', require('./routes/products'));
 app.use('/api/auth', require('./routes/auth'));
@@ -42,6 +56,16 @@ app.get('/api', (req, res) => {
 
 app.get('/', (req, res) => {
     res.send('JPS Store API is running');
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('🔥 SERVER ERROR:', err.stack);
+    res.status(500).json({
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'production' ? 'Something went wrong on our end.' : err.message,
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    });
 });
 
 app.listen(PORT, () => {
