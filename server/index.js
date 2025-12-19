@@ -9,6 +9,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+console.log('--- Environment Check ---');
+console.log('MONGODB_URI present:', !!process.env.MONGODB_URI);
+if (process.env.MONGODB_URI) {
+    console.log('MONGODB_URI starts with:', process.env.MONGODB_URI.substring(0, 15) + '...');
+}
+console.log('-------------------------');
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
