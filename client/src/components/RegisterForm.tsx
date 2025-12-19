@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { signIn } from 'next-auth/react';
+import { API_URL } from '@/config';
 
 export default function RegisterForm() {
     const { login } = useAuth();
@@ -23,8 +24,7 @@ export default function RegisterForm() {
 
         if (name && email && password) {
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-                const res = await fetch(`${apiUrl}/auth/register`, {
+                const res = await fetch(`${API_URL}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password }),

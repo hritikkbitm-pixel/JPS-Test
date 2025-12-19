@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useShop } from '@/context/ShopContext';
+
+import { API_URL } from '@/config';
+
+declare global {
+    interface Window {
+        Paytm: any;
+    }
+}
 
 export default function CartPage() {
     const { cart, cartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -31,12 +39,11 @@ export default function CartPage() {
     const [shouldSaveAddress, setShouldSaveAddress] = useState(false);
 
     // Fetch saved addresses on load
-    React.useEffect(() => {
+    useEffect(() => {
         if (user?.email) {
-            // Pre-fill email from user if available
             setShippingAddress(prev => ({ ...prev, email: user.email || '' }));
 
-            fetch('/api/user/address')
+            fetch(`${API_URL}/user/address`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.addresses) {
@@ -53,11 +60,25 @@ export default function CartPage() {
 
     const handleSelectAddress = (index: number) => {
         if (index === -1) {
-            // Clear form (keep email if logged in)
             setShippingAddress({ fullName: '', email: user?.email || '', label: 'Home', line1: '', line2: '', city: '', state: '', zip: '', phone: '' });
         } else {
             setShippingAddress({ ...savedAddresses[index], email: user?.email || savedAddresses[index].email || '' });
         }
+    };
+
+    const loadPaytmScript = (mid: string) => {
+        return new Promise((resolve) => {
+            if (window.Paytm && window.Paytm.CheckoutJS) {
+                resolve(true);
+                return;
+            }
+            const script = document.createElement('script');
+            // Use securegw-stage.paytm.in for Staging
+            script.src = `https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/${mid}.js`;
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
     };
 
     const handlePlaceOrder = async () => {
@@ -67,13 +88,11 @@ export default function CartPage() {
             return;
         }
 
-        // Validate Address
         if (!shippingAddress.fullName || !shippingAddress.email || !shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip || !shippingAddress.phone) {
             alert("Please fill in all required fields (Name, Email, Address, Phone).");
             return;
         }
 
-        // Order Creation Logic
         const createOrderObject = () => ({
             id: 'ORD-' + Math.floor(Math.random() * 100000),
             email: shippingAddress.email,
@@ -87,66 +106,98 @@ export default function CartPage() {
             invoice: '#'
         });
 
-        // 1. Handle Online Payments First
-        if (paymentMethod === 'PHONEPE') {
-            try {
-                const res = await fetch('/api/payment/phonepe/pay', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        amount: cartTotal,
-                        userId: user.email,
-                        mobileNumber: shippingAddress.phone
-                    })
-                });
-                const data = await res.json();
-                if (data.redirectUrl) {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    alert('PhonePe initialization failed.');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Payment Error');
-            }
-            return; // Stop here, redirecting
-        }
+        if (paymentMethod === 'PAYTM' || paymentMethod === 'PHONEPE') {
+            const newOrder = createOrderObject();
+            newOrder.status = 'Pending Payment';
 
-        if (paymentMethod === 'PAYTM') {
             try {
-                const res = await fetch('/api/payment/paytm/pay', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        amount: cartTotal,
-                        email: shippingAddress.email,
-                        mobile: shippingAddress.phone
-                    })
-                });
-                const data = await res.json();
-                if (data.txnToken) {
-                    // Initialize Paytm CheckoutJS
-                    // Note: You need to load Paytm Script in layout or here. 
-                    // For now, assuming basic redirect or logic as per user snippet.
-                    // If user wanted redirect flow:
-                    alert(`Paytm Init Success. Token: ${data.txnToken}. (Actual CheckoutJS integration required here)`);
-                    // window.Paytm.CheckoutJS.init(...)
-                } else {
-                    alert('Paytm initialization failed.');
+                // Save order first
+                await addOrder(newOrder);
+
+                if (paymentMethod === 'PHONEPE') {
+                    const res = await fetch(`${API_URL}/payment/phonepe/pay`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: cartTotal,
+                            userId: user.email,
+                            mobileNumber: shippingAddress.phone,
+                            orderId: newOrder.id
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.redirectUrl) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        alert('PhonePe initialization failed.');
+                    }
+                } else if (paymentMethod === 'PAYTM') {
+                    const res = await fetch(`${API_URL}/payment/paytm/pay`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: cartTotal,
+                            email: shippingAddress.email,
+                            mobile: shippingAddress.phone,
+                            orderId: newOrder.id
+                        })
+                    });
+                    const data = await res.json();
+
+                    if (data.success && data.txnToken) {
+                        // Load Paytm Script Dynamically using the MID returned from server
+                        const scriptLoaded = await loadPaytmScript(data.mid);
+
+                        if (scriptLoaded && window.Paytm && window.Paytm.CheckoutJS) {
+                            const config = {
+                                "root": "",
+                                "flow": "DEFAULT",
+                                "data": {
+                                    "orderId": data.orderId,
+                                    "token": data.txnToken,
+                                    "tokenType": "TXN_TOKEN",
+                                    "amount": data.amount
+                                },
+                                "merchant": {
+                                    "mid": data.mid,
+                                    "redirect": true,
+                                    "callbackUrl": `${API_URL}/payment/paytm/callback`,
+                                    "name": "JPS Enterprise"
+                                },
+                                "handler": {
+                                    "notifyMerchant": function (eventName: string, data: any) {
+                                        console.log("Paytm Notify:", eventName, data);
+                                    },
+                                    "transactionStatus": function (data: any) {
+                                        console.log("Paytm Transaction Status", data);
+                                    }
+                                }
+                            };
+
+                            window.Paytm.CheckoutJS.init(config).then(function () {
+                                window.Paytm.CheckoutJS.invoke();
+                            }).catch(function (error: any) {
+                                console.error("Paytm Init Error", error);
+                                alert("Failed to open payment window.");
+                            });
+                        } else {
+                            alert("Failed to load payment gateway.");
+                        }
+                    } else {
+                        alert('Paytm initialization failed: ' + (data.error || 'Unknown error'));
+                    }
                 }
             } catch (err) {
                 console.error(err);
-                alert('Payment Error');
+                alert('Order/Payment Error');
             }
             return;
         }
 
-        // 2. Handle COD (Save Order Locally)
-
-        // Save address if requested
+        // COD Logic
         if (shouldSaveAddress) {
             try {
-                await fetch('/api/user/address', {
+                await fetch(`${API_URL}/user/address`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ address: shippingAddress }),
@@ -157,18 +208,10 @@ export default function CartPage() {
         }
 
         const newOrder = createOrderObject();
-
-        // Update user orders
         const updatedOrders = user.orders ? [...user.orders, newOrder] : [newOrder];
         updateUser({ orders: updatedOrders });
-
-        // Add to global shop orders (for Admin Panel)
         addOrder(newOrder);
-
-        // Clear cart
         clearCart();
-
-        // Redirect to account
         alert("Order placed successfully via Cash on Delivery!");
         router.push('/account');
     };
@@ -186,7 +229,7 @@ export default function CartPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 fade-in">
+        <div className="container mx-auto px-4 py-8 fade-in relative">
             <h1 className="text-3xl font-black text-gray-800 uppercase tracking-tight mb-8">Checkout</h1>
 
             {/* Steps Indicator */}
@@ -243,7 +286,6 @@ export default function CartPage() {
                         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
                             <h2 className="text-xl font-bold mb-6">Shipping Address</h2>
 
-                            {/* Saved Addresses Dropdown */}
                             {savedAddresses.length > 0 && (
                                 <div className="mb-6 bg-blue-50 p-4 rounded border border-blue-100">
                                     <label className="block text-blue-800 text-sm font-bold mb-2">Select Saved Address</label>
@@ -356,7 +398,7 @@ export default function CartPage() {
                                     />
                                     <div className="flex flex-col">
                                         <span className="font-bold">Paytm</span>
-                                        <span className="text-xs text-gray-500">Wallet, UPI, Cards</span>
+                                        <span className="text-xs text-gray-500">Wallet, UPI, Cards, Postpaid</span>
                                     </div>
                                 </label>
                             </div>

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Star, Truck, Shield, RotateCcw, ShoppingCart, Check, Heart, ArrowLeft, Loader2 } from 'lucide-react';
+import { API_URL } from '@/config';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { Product } from '@/lib/data';
@@ -18,7 +20,7 @@ export default function ProductPage() {
             if (!id) return;
             try {
                 // Try fetching from API
-                const res = await axios.get(`http://localhost:5001/api/products/${id}`);
+                const res = await axios.get(`${API_URL}/products/${id}`);
                 if (res.data) {
                     setProduct(res.data);
                 } else {
@@ -39,13 +41,8 @@ export default function ProductPage() {
     if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-bold">{error}</div>;
     if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
 
-    // SEO / Title handled by NEXT.js usually, but we are client-side here.
-    // In a real App Router setup, we'd fetch in generateMetadata in a layout/server component.
-    // For now, this is a Client Component page.
-
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Back Button / Breadcrumb could go here */}
             <UniversalProductView product={product} />
         </div>
     );

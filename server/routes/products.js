@@ -142,7 +142,8 @@ router.get('/cat/:category/csv', checkAuth, async (req, res) => {
     if (!csvPath || !fs.existsSync(csvPath)) {
         return res.status(404).json({ message: 'Category CSV not found' });
     }
-    res.download(csvPath);
+    const filename = `${req.params.category}_inventory.csv`;
+    res.download(csvPath, filename);
 });
 
 // Upload Category CSV

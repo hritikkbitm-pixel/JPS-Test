@@ -1,29 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '@/config';
 import { useShop } from '@/context/ShopContext';
 import { Product } from '@/lib/data';
 import AdminDataTools from '../AdminDataTools';
 import axios from 'axios';
 
 // Categories config
-const CATEGORIES = [
-    { id: 'cpu', label: 'CPU' },
-    { id: 'motherboard', label: 'Motherboard' },
-    { id: 'gpu', label: 'GPU' },
-    { id: 'ram', label: 'RAM' },
-    { id: 'storage', label: 'Storage' },
-    { id: 'psu', label: 'PSU' },
-    { id: 'case', label: 'Cabinet' },
-    { id: 'cooler', label: 'Cooling' }
-];
-
 export default function ProductsView() {
-    const { toggleFeatured } = useShop(); // Keep toggleFeatured usage or remove if not supported in CSV yet
-    // Note: Featured might be a Mongo-only flag? If so, syncing might overwrite it if not in CSV.
-    // For now, we assume basic CSV CRUD.
+    const { toggleFeatured, categories } = useShop();
 
-    const [selectedCategory, setSelectedCategory] = useState('cpu');
+    const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id || 'cpu');
     const [products, setProducts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -31,18 +19,19 @@ export default function ProductsView() {
     const [productForm, setProductForm] = useState<any>({});
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Update selected category if it no longer exists
+    useEffect(() => {
+        if (categories.length > 0 && !categories.find(c => c.id === selectedCategory)) {
+            setSelectedCategory(categories[0].id);
+        }
+    }, [categories, selectedCategory]);
+
     // Fetch products for selected category
     useEffect(() => {
         const fetchCategoryProducts = async () => {
             setIsLoading(true);
             try {
-                // Using new CSV endpoint
-                // Note: Auth header is handled globally or needs addition. useShop (ShopContext) usually uses axios instance?
-                // Assuming global axios or we need to add headers. ShopContext usually doesn't expose axios.
-                // We'll use standard fetch or axios with manually added header if needed.
-                // Assuming 'x-user-email' is needed as per `products.js`.
-                // In a real app, AuthContext provides tokens. Here we might need to hardcode specific email for "Admin".
-                const res = await axios.get(`http://localhost:5001/api/products/cat/${selectedCategory}`, {
+                const res = await axios.get(`${API_URL}/products/cat/${selectedCategory}`, {
                     headers: { 'x-user-email': 'admin@jps.com' }
                 });
                 setProducts(res.data);
@@ -61,7 +50,6 @@ export default function ProductsView() {
 
     const filteredProducts = products.filter(product => {
         const name = product.name || product.full_name || '';
-        // CSV splits might have used 'full_name'.
         const brand = product.brand || '';
         return name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             brand.toLowerCase().includes(searchQuery.toLowerCase());
@@ -69,9 +57,8 @@ export default function ProductsView() {
 
     const handleAddProduct = () => {
         setEditingProduct(null);
-        // Default form based on category?
         setProductForm({
-            category: selectedCategory, // Force category
+            category: selectedCategory,
             brand: '', name: '', price: '', stock_status: 'In Stock', image_url: ''
         });
         setIsProductModalOpen(true);
@@ -86,10 +73,9 @@ export default function ProductsView() {
     const handleDeleteProduct = async (id: string) => {
         if (confirm('Are you sure you want to delete this product?')) {
             try {
-                await axios.delete(`http://localhost:5001/api/products/cat/${selectedCategory}/${id}`, {
+                await axios.delete(`${API_URL}/products/cat/${selectedCategory}/${id}`, {
                     headers: { 'x-user-email': 'admin@jps.com' }
                 });
-                // Refresh
                 setProducts(prev => prev.filter(p => p.id !== id));
             } catch (err) {
                 alert('Failed to delete product');
@@ -102,13 +88,12 @@ export default function ProductsView() {
         e.preventDefault();
         try {
             if (editingProduct) {
-                await axios.put(`http://localhost:5001/api/products/cat/${selectedCategory}/${editingProduct.id}`, productForm, {
+                await axios.put(`${API_URL}/products/cat/${selectedCategory}/${editingProduct.id}`, productForm, {
                     headers: { 'x-user-email': 'admin@jps.com' }
                 });
-                // Optimistic Update
                 setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productForm } : p));
             } else {
-                const res = await axios.post(`http://localhost:5001/api/products/cat/${selectedCategory}`, productForm, {
+                const res = await axios.post(`${API_URL}/products/cat/${selectedCategory}`, productForm, {
                     headers: { 'x-user-email': 'admin@jps.com' }
                 });
                 setProducts(prev => [...prev, res.data]);
@@ -120,33 +105,27 @@ export default function ProductsView() {
         }
     };
 
-    // Dynamic Columns based on first product or schema?
-    // User requested "Allow CRUD... inside that category".
-    // We can show basic columns + 'Edit' button which opens full form?
-    // Or dynamic table? Let's do basic table for now to avoid complexity overload.
-    // Name, Brand, Price, Stock Status.
-
     const handleDownloadCsv = async (e: React.MouseEvent) => {
         e.preventDefault();
         try {
-            const res = await axios.get(`http://localhost:5001/api/products/cat/${selectedCategory}/csv`, {
+            const fileName = `${selectedCategory || 'export'}_inventory.csv`;
+            const res = await axios.get(`${API_URL}/products/cat/${selectedCategory}/csv`, {
                 responseType: 'blob',
                 headers: { 'x-user-email': 'admin@jps.com' }
             });
 
-            // Create blob link to download
             const blob = new Blob([res.data], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `${selectedCategory}_inventory.csv`);
+            link.setAttribute('download', fileName);
             document.body.appendChild(link);
             link.click();
             link.parentNode?.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (err) {
             console.error("Download failed", err);
-            alert("Failed to download CSV. unauthorized.");
+            alert("Failed to download CSV.");
         }
     };
 
@@ -164,7 +143,6 @@ export default function ProductsView() {
                             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-brand-red"
                         />
                     </div>
-                    {/* CSV Tools */}
                     <div className="flex gap-2">
                         <button
                             onClick={handleDownloadCsv}
@@ -182,19 +160,19 @@ export default function ProductsView() {
                                 onChange={async (e) => {
                                     if (e.target.files && e.target.files[0]) {
                                         const file = e.target.files[0];
-                                        if (!confirm(`Upload ${file.name} to replace ${selectedCategory} inventory? This cannot be undone.`)) return;
+                                        if (!confirm(`Upload ${file.name} to replace ${selectedCategory} inventory?`)) return;
 
                                         const formData = new FormData();
                                         formData.append('file', file);
                                         try {
                                             setIsLoading(true);
-                                            await axios.post(`http://localhost:5001/api/products/cat/${selectedCategory}/csv`, formData, {
+                                            await axios.post(`${API_URL}/products/cat/${selectedCategory}/csv`, formData, {
                                                 headers: {
                                                     'x-user-email': 'admin@jps.com',
                                                     'Content-Type': 'multipart/form-data'
                                                 }
                                             });
-                                            alert('CSV Uploaded Successfully! Page will refresh.');
+                                            alert('CSV Uploaded Successfully!');
                                             window.location.reload();
                                         } catch (err) {
                                             console.error(err);
@@ -212,9 +190,8 @@ export default function ProductsView() {
                 </button>
             </div>
 
-            {/* Category Tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {CATEGORIES.map(cat => (
+                {categories.map((cat: any) => (
                     <button
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
@@ -225,7 +202,6 @@ export default function ProductsView() {
                 ))}
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
                     <div className="p-8 text-center text-gray-500">Loading {selectedCategory} data...</div>
@@ -249,7 +225,7 @@ export default function ProductsView() {
                                     filteredProducts.map((product, idx) => (
                                         <tr key={product.id || idx} className="border-b hover:bg-gray-50 transition">
                                             <td className="p-3">
-                                                <img src={product.image_url || product.image || "https://via.placeholder.com/40"} alt="" className="w-10 h-10 object-contain border rounded bg-white" />
+                                                <img src={product.image_url || product.image || "/placeholder.svg"} alt="" className="w-10 h-10 object-contain border rounded bg-white" />
                                             </td>
                                             <td className="p-3 font-bold text-gray-800">{product.name || product.full_name}</td>
                                             <td className="p-3 text-gray-600">{product.brand}</td>
@@ -276,7 +252,6 @@ export default function ProductsView() {
                 )}
             </div>
 
-            {/* Product Modal */}
             {isProductModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm fade-in">
                     <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-lg flex flex-col shadow-2xl animate-scale-in">
@@ -287,9 +262,8 @@ export default function ProductsView() {
                         <div className="p-6 overflow-y-auto">
                             <form onSubmit={handleSaveProduct} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
-                                    {/* Dynamic Fields rendering based on current product keys + default keys */}
                                     {Object.keys(productForm).length > 0 ? Object.keys(productForm).map(key => {
-                                        if (key === 'id') return null; // Don't edit ID
+                                        if (key === 'id') return null;
                                         return (
                                             <div key={key} className="col-span-1">
                                                 <label className="block text-gray-700 text-xs font-bold mb-1 uppercase truncate" title={key}>{key.replace(/_/g, ' ')}</label>
@@ -302,7 +276,7 @@ export default function ProductsView() {
                                             </div>
                                         )
                                     }) : (
-                                        <div className="col-span-2 text-gray-500">Initialize fields by adding a product...</div>
+                                        <div className="col-span-2 text-gray-500">Add a product to see fields...</div>
                                     )}
                                 </div>
 

@@ -1,22 +1,28 @@
-const https = require("https");
+const axios = require("axios");
 const PaytmChecksum = require("paytmchecksum");
+const Order = require("../models/Order");
 
 exports.createPaytmOrder = async (req, res) => {
-    const { amount, email, mobile } = req.body;
+    const { amount, email, mobile, orderId: frontendOrderId } = req.body;
 
-    const orderId = "ORD" + Date.now();
-    const PAYTM_MID = process.env.PAYTM_MID || 'TESTMID123';
-    const PAYTM_MERCHANT_KEY = process.env.PAYTM_MERCHANT_KEY || 'TestMerchantKey';
+    const orderId = frontendOrderId || "ORD" + Date.now();
+    const PAYTM_MID = process.env.PAYTM_MID;
+    const PAYTM_MERCHANT_KEY = process.env.PAYTM_MERCHANT_KEY;
+    const PAYTM_WEBSITE = process.env.PAYTM_WEBSITE || "WEBSTAGING";
+    const PAYTM_INDUSTRY_TYPE = process.env.PAYTM_INDUSTRY_TYPE || "Retail";
+    const PAYTM_CHANNEL_ID = process.env.PAYTM_CHANNEL_ID_WEB || "WEB";
+
+    const BACKEND_URL = process.env.API_URL || "http://localhost:5001";
 
     const paytmParams = {
         body: {
             requestType: "Payment",
             mid: PAYTM_MID,
-            websiteName: "WEBSTAGING", // Change to "DEFAULT" for Production
+            websiteName: PAYTM_WEBSITE,
             orderId: orderId,
-            callbackUrl: `http://localhost:5001/api/payment/paytm/status/${orderId}`,
+            callbackUrl: `${BACKEND_URL}/api/payment/paytm/callback`,
             txnAmount: {
-                value: String(amount),
+                value: String(parseFloat(amount).toFixed(2)),
                 currency: "INR"
             },
             userInfo: {
@@ -35,59 +41,99 @@ exports.createPaytmOrder = async (req, res) => {
 
         paytmParams.head = { signature: checksum };
 
-        const postData = JSON.stringify(paytmParams);
+        console.log("--- INITIATING PAYTM TRANSACTION ---");
+        console.log("MID used:", PAYTM_MID);
+        console.log("Website used:", PAYTM_WEBSITE);
+        console.log("Order ID:", orderId);
+        console.log("Payload Body:", JSON.stringify(paytmParams.body, null, 2));
 
-        const options = {
-            hostname: "securegw-stage.paytm.in", // Use securegw.paytm.in for Prod
-            path: `/theia/api/v1/initiateTransaction?mid=${PAYTM_MID}&orderId=${orderId}`,
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Content-Length": postData.length,
+        const response = await axios.post(
+            `https://securegw-stage.paytm.in/theia/api/v1/initiateTransaction?mid=${PAYTM_MID}&orderId=${orderId}`,
+            paytmParams,
+            {
+                headers: { "Content-Type": "application/json" }
             }
-        };
+        );
 
-        const reqPaytm = https.request(options, (resp) => {
-            let response = "";
-            resp.on("data", (chunk) => {
-                response += chunk;
+        const json = response.data;
+        console.log("Paytm Init Response JSON:", JSON.stringify(json, null, 2));
+
+        if (json.body && json.body.resultInfo && json.body.resultInfo.resultStatus === "S") {
+            return res.json({
+                success: true,
+                orderId,
+                txnToken: json.body.txnToken,
+                mid: PAYTM_MID,
+                amount: String(amount)
             });
-            resp.on("end", () => {
-                try {
-                    const json = JSON.parse(response);
-                    return res.json({
-                        success: true,
-                        orderId,
-                        txnToken: json.body.txnToken,
-                        mid: PAYTM_MID,
-                        amount: String(amount)
-                    });
-                } catch (e) {
-                    return res.status(500).json({ error: "Invalid response from Paytm" });
-                }
+        } else {
+            console.error("🔥 PAYTM BUSINESS ERROR:", json.body?.resultInfo);
+            return res.status(400).json({
+                success: false,
+                error: json.body?.resultInfo?.resultMsg || "Invalid response from Paytm",
+                raw: json
             });
+        }
+    } catch (err) {
+        console.error("🔥 PAYTM INIT ERROR FULL OBJECT:", err);
+        console.error("🔥 PAYTM RESPONSE DATA:", err.response?.data);
+        console.error("🔥 PAYTM RESPONSE STATUS:", err.response?.status);
+        console.error("🔥 PAYTM RESPONSE HEADERS:", err.response?.headers);
+
+        return res.status(err.response?.status || 500).json({
+            success: false,
+            error: "Paytm initialization failed",
+            paytmError: err.response?.data || err.message
         });
-
-        reqPaytm.write(postData);
-        reqPaytm.end();
-    } catch (error) {
-        console.error("Paytm Init Error:", error);
-        res.status(500).json({ error: "Paytm initialization failed" });
     }
 };
 
 exports.verifyPaytmStatus = async (req, res) => {
-    // This is a placeholder as actual verification usually happens via POST callback
-    // But for this flow, we might just check status
     const { orderId } = req.params;
-    // Implementation would involve Payment Status API call
-    res.json({ status: "Pending Implementation", orderId });
+    const PAYTM_MID = process.env.PAYTM_MID;
+    const PAYTM_MERCHANT_KEY = process.env.PAYTM_MERCHANT_KEY;
+
+    const paytmParams = {
+        body: {
+            mid: PAYTM_MID,
+            orderId: orderId,
+        }
+    };
+
+    try {
+        const checksum = await PaytmChecksum.generateSignature(JSON.stringify(paytmParams.body), PAYTM_MERCHANT_KEY);
+        paytmParams.head = { signature: checksum };
+
+        const response = await axios.post(
+            "https://securegw-stage.paytm.in/v3/order/status",
+            paytmParams,
+            {
+                headers: { "Content-Type": "application/json" }
+            }
+        );
+
+        res.json(response.data);
+    } catch (e) {
+        console.error("Status check failed:", e.response?.data || e.message);
+        res.status(500).json({ error: "Status check failed" });
+    }
 };
 
-// Handle POST Callback from Paytm
-exports.paytmCallback = (req, res) => {
-    // Paytm sends form data here
-    console.log("Paytm Callback:", req.body);
-    // redirects user to frontend success
-    res.redirect(`http://localhost:3000/payment/success?orderId=${req.body.ORDERID}&status=${req.body.STATUS}`);
+exports.paytmCallback = async (req, res) => {
+    console.log("Paytm Callback received:", req.body);
+    const { ORDERID, STATUS, RESPCODE, RESPMSG } = req.body;
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+    try {
+        if (STATUS === "TXN_SUCCESS") {
+            await Order.findOneAndUpdate({ id: ORDERID }, { status: "Paid" });
+            res.redirect(`${FRONTEND_URL}/payment/success?orderId=${ORDERID}`);
+        } else {
+            await Order.findOneAndUpdate({ id: ORDERID }, { status: "Payment Failed" });
+            res.redirect(`${FRONTEND_URL}/payment/failure?orderId=${ORDERID}&msg=${encodeURIComponent(RESPMSG)}`);
+        }
+    } catch (err) {
+        console.error("Order Update Error in Callback:", err);
+        res.redirect(`${FRONTEND_URL}/payment/failure?orderId=${ORDERID}&msg=Error+updating+order+status`);
+    }
 };

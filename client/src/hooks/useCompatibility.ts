@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '@/config';
 import { Product } from '../lib/data';
 
 interface CompatibilityResult {
@@ -31,8 +32,8 @@ export function useCompatibility(product: Product | null) {
                 if (category === 'cpu' || category === 'cpus') {
                     const socket = norm(specs.socket);
                     if (socket) {
-                        const res = await axios.get(`http://localhost:5001/api/products?category=motherboard`);
-                        recs['Compatible Motherboards'] = res.data.filter((p: any) =>
+                        const res = await axios.get(`${API_URL}/products?category=motherboard`);
+                        recs['Compatible Motherboards'] = (res.data || []).filter((p: any) =>
                             norm(p.specs?.cpu_socket || p.specs?.socket) === socket
                         ).slice(0, 4);
                     }
@@ -44,14 +45,14 @@ export function useCompatibility(product: Product | null) {
                     const memType = norm(specs.memory_type);
 
                     if (socket) {
-                        const resCpu = await axios.get(`http://localhost:5001/api/products?category=cpu`);
-                        recs['Compatible Processors'] = resCpu.data.filter((p: any) =>
+                        const resCpu = await axios.get(`${API_URL}/products?category=cpu`);
+                        recs['Compatible Processors'] = (resCpu.data || []).filter((p: any) =>
                             norm(p.specs?.socket) === socket
                         ).slice(0, 4);
                     }
                     if (memType) {
-                        const resRam = await axios.get(`http://localhost:5001/api/products?category=ram`);
-                        recs['Compatible Memory'] = resRam.data.filter((p: any) =>
+                        const resRam = await axios.get(`${API_URL}/products?category=ram`);
+                        recs['Compatible Memory'] = (resRam.data || []).filter((p: any) =>
                             norm(p.specs?.memory_type) === memType
                         ).slice(0, 4);
                     }
@@ -60,8 +61,8 @@ export function useCompatibility(product: Product | null) {
                 // --- 3. GPU -> PSU ---
                 if (category === 'gpu' || category === 'gpus') {
                     const recommendedWatts = Number(specs.recommended_psu || specs.recommended_psu_wattage || 650);
-                    const resPsu = await axios.get(`http://localhost:5001/api/products?category=psu`);
-                    recs['Recommended Power Supplies'] = resPsu.data.filter((p: any) => {
+                    const resPsu = await axios.get(`${API_URL}/products?category=psu`);
+                    recs['Recommended Power Supplies'] = (resPsu.data || []).filter((p: any) => {
                         const psuWatts = Number(p.specs?.wattage || 0);
                         return psuWatts >= recommendedWatts;
                     }).slice(0, 4);
@@ -71,8 +72,8 @@ export function useCompatibility(product: Product | null) {
                 if (category === 'ram') {
                     const memType = norm(specs.memory_type);
                     if (memType) {
-                        const resMobo = await axios.get(`http://localhost:5001/api/products?category=motherboard`);
-                        recs['Compatible Motherboards'] = resMobo.data.filter((p: any) =>
+                        const resMobo = await axios.get(`${API_URL}/products?category=motherboard`);
+                        recs['Compatible Motherboards'] = (resMobo.data || []).filter((p: any) =>
                             norm(p.specs?.memory_type) === memType
                         ).slice(0, 4);
                     }
@@ -80,13 +81,9 @@ export function useCompatibility(product: Product | null) {
 
                 // --- 5. Case -> Motherboard Form Factors ---
                 if (category === 'case' || category === 'cabinets') {
-                    // Logic: Get supported mobo types
-                    // This is complex as "E-ATX|ATX" string needs parsing.
-                    // For now, let's just suggest "Popular Compatible Motherboards" (ATX usually safe)
-                    const resMobo = await axios.get(`http://localhost:5001/api/products?category=motherboard`);
-                    // Simple filter: if case says 'ITX' only, filter. Else show ATX.
+                    const resMobo = await axios.get(`${API_URL}/products?category=motherboard`);
                     const supportStr = (specs.form_factor || '').toUpperCase();
-                    recs['Compatible Motherboards'] = resMobo.data.filter((p: any) => {
+                    recs['Compatible Motherboards'] = (resMobo.data || []).filter((p: any) => {
                         const moboFF = (p.specs?.form_factor || 'ATX').toUpperCase();
                         if (supportStr.includes(moboFF)) return true;
                         if (supportStr.includes('ATX') && moboFF === 'ATX') return true;

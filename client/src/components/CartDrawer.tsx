@@ -22,7 +22,11 @@ export default function CartDrawer() {
                     ) : (
                         cart.map((item, index) => (
                             <div key={index} className="flex gap-4 items-center border-b pb-4">
-                                <img src={item.image || "https://via.placeholder.com/64"} alt={item.name} className="w-16 h-16 object-contain border rounded p-1" />
+                                {item.image ? (
+                                    <img src={item.image} alt={item.name} className="w-16 h-16 object-contain border rounded p-1" />
+                                ) : (
+                                    <div className="w-16 h-16 bg-gray-100 border rounded flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                                )}
                                 <div className="flex-grow">
                                     <div className="text-[10px] font-bold text-gray-500 uppercase">{item.brand}</div>
                                     <div className="font-bold text-sm text-gray-800 line-clamp-1">{item.name}</div>

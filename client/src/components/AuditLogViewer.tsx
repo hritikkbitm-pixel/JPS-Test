@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { API_URL } from '@/config';
 
 interface AuditLog {
     _id: string;
@@ -22,8 +23,7 @@ export default function AuditLogViewer() {
         setLoading(true);
         setError('');
         try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-            const res = await fetch(`${apiUrl}/audit`, {
+            const res = await fetch(`${API_URL}/audit`, {
                 headers: {
                     'x-user-email': user?.email || ''
                 }

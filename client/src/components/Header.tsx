@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useShop } from '../context/ShopContext';
 import CategoryDropdown from './CategoryDropdown';
 
 import { checkIsAdmin } from '../utils/isAdmin';
@@ -11,6 +12,7 @@ import { checkIsAdmin } from '../utils/isAdmin';
 export default function Header() {
     const { cartTotal, toggleCart, cart } = useCart();
     const { user, isLoading } = useAuth();
+    const { categories } = useShop();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
@@ -157,11 +159,20 @@ export default function Header() {
             {isMobileMenuOpen && (
                 <div className="md:hidden bg-white border-t shadow-lg">
                     <div className="flex flex-col text-sm font-semibold text-gray-700">
-                        <Link href="/" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>All Products</Link>
+                        <Link href="/?category=all" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>All Products</Link>
                         <Link href="/builder" className="p-4 border-b text-brand-red bg-red-50" onClick={() => setIsMobileMenuOpen(false)}>PC System Builder</Link>
-                        <Link href="/?category=cpu" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>Processors</Link>
+                        {categories.slice(0, 5).map((cat: any) => (
+                            <Link
+                                key={cat.id}
+                                href={`/?category=${cat.id}`}
+                                className="p-4 border-b hover:bg-gray-50"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                {cat.label}
+                            </Link>
+                        ))}
                         {!isLoading && user && checkIsAdmin(user) && (
-                            <Link href="/admin" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</Link>
+                            <Link href="/admin" className="p-4 border-b hover:bg-gray-50 text-brand-red" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</Link>
                         )}
                     </div>
                 </div>

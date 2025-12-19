@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Database Connection
 const syncInventory = require('./utils/syncInventory');
@@ -33,6 +34,7 @@ app.use('/api/banners', require('./routes/banners'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/audit', require('./routes/audit'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/user', require('./routes/user'));
 
 app.get('/', (req, res) => {
     res.send('JPS Store API is running');

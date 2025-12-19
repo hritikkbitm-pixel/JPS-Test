@@ -2,59 +2,23 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useShop } from '@/context/ShopContext';
 
-interface SubCategory {
-    name: string;
-    href: string;
-}
-
-interface Category {
-    id: string;
-    name: string;
-    icon: string;
-    subcategories: SubCategory[];
-}
-
-const categories: Category[] = [
-    {
-        id: 'core',
-        name: 'Core Components',
-        icon: 'fas fa-microchip',
-        subcategories: [
-            { name: 'Processors', href: '/?category=cpu' },
-            { name: 'Motherboards', href: '/?category=motherboard' },
-            { name: 'Graphics Cards', href: '/?category=gpu' },
-        ]
-    },
-    {
-        id: 'memory',
-        name: 'Memory & Storage',
-        icon: 'fas fa-memory',
-        subcategories: [
-            { name: 'Desktop Memory', href: '/?category=ram' },
-            { name: 'Storage (SSD/HDD)', href: '/?category=storage' },
-        ]
-    },
-    {
-        id: 'power',
-        name: 'Power & Cabinet',
-        icon: 'fas fa-plug',
-        subcategories: [
-            { name: 'Power Supply (SMPS)', href: '/?category=psu' },
-            { name: 'Cabinets', href: '/?category=case' },
-        ]
-    },
-    {
-        id: 'accessories',
-        name: 'Accessories',
-        icon: 'fas fa-keyboard',
-        subcategories: [
-            { name: 'All Products', href: '/?category=all' },
-        ]
-    }
-];
+// Icon mapping for well-known categories
+const iconMap: Record<string, string> = {
+    'cpu': 'fas fa-microchip',
+    'motherboard': 'fas fa-memory',
+    'gpu': 'fas fa-gamepad',
+    'ram': 'fas fa-memory',
+    'storage': 'fas fa-hdd',
+    'case': 'fas fa-box',
+    'psu': 'fas fa-plug',
+    'cooling': 'fas fa-fan',
+    'all': 'fas fa-th-large'
+};
 
 export default function CategoryDropdown() {
+    const { categories } = useShop();
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
     return (
@@ -67,39 +31,40 @@ export default function CategoryDropdown() {
             </button>
 
             {/* Dropdown Menu */}
-            <div className="absolute top-full left-0 w-64 bg-white shadow-xl border-t-2 border-brand-red hidden group-hover:block">
-                <div className="flex flex-col relative">
-                    {categories.map((category) => (
-                        <div
-                            key={category.id}
-                            className="group/item"
-                            onMouseEnter={() => setActiveCategory(category.id)}
-                        >
-                            <div className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 flex items-center justify-between cursor-pointer transition">
+            <div className="absolute top-full left-0 w-64 bg-white shadow-xl border-t-2 border-brand-red hidden group-hover:block max-h-[70vh] overflow-y-auto scrollbar-hide">
+                <div className="flex flex-col">
+                    {categories.length > 0 ? (
+                        categories.map((category) => (
+                            <Link
+                                key={category.id}
+                                href={`/?category=${category.id}`}
+                                className="group/item px-4 py-3 border-b border-gray-100 hover:bg-gray-50 flex items-center justify-between cursor-pointer transition"
+                            >
                                 <div className="flex items-center gap-3 text-sm font-bold text-gray-700 group-hover/item:text-brand-red">
-                                    <i className={`${category.icon} w-5 text-center text-gray-400 group-hover/item:text-brand-red`}></i>
-                                    {category.name}
+                                    <i className={`${iconMap[category.id] || 'fas fa-tag'} w-5 text-center text-gray-400 group-hover/item:text-brand-red`}></i>
+                                    {category.label}
                                 </div>
-                                <i className="fas fa-chevron-right text-xs text-gray-300 group-hover/item:text-brand-red"></i>
-                            </div>
-
-                            {/* Subcategory Menu (Mega Menu Style) */}
-                            <div className="absolute top-0 left-full w-64 h-full min-h-[200px] bg-white shadow-xl border-l border-gray-100 hidden group-hover/item:block p-4">
-                                <h3 className="font-black text-gray-800 uppercase tracking-wide mb-3 border-b pb-2 text-sm">
-                                    {category.name}
-                                </h3>
-                                <ul className="space-y-2">
-                                    {category.subcategories.map((sub) => (
-                                        <li key={sub.name}>
-                                            <Link href={sub.href} className="text-sm text-gray-600 hover:text-brand-red hover:translate-x-1 transition-transform block">
-                                                {sub.name}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                <i className="fas fa-chevron-right text-[10px] text-gray-300 group-hover/item:text-brand-red"></i>
+                            </Link>
+                        ))
+                    ) : (
+                        <div className="px-4 py-6 text-center text-gray-400 text-sm">
+                            <i className="fas fa-folder-open mb-2 block text-xl"></i>
+                            No categories found
                         </div>
-                    ))}
+                    )}
+
+                    {/* Always show "All Products" link at bottom */}
+                    <Link
+                        href="/?category=all"
+                        className="px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition border-t border-gray-100"
+                    >
+                        <div className="flex items-center gap-3 text-sm font-bold text-brand-red">
+                            <i className="fas fa-th-large w-5 text-center"></i>
+                            All Products
+                        </div>
+                        <i className="fas fa-bolt text-[10px] text-brand-red"></i>
+                    </Link>
                 </div>
             </div>
         </div>

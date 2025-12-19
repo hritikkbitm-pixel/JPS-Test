@@ -6,6 +6,7 @@ import axios from 'axios';
 import { generateCSV, parseCSV } from '../utils/csvParser';
 import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/config';
 
 export default function AdminDataTools() {
     const { setProducts } = useShop();
@@ -110,8 +111,7 @@ export default function AdminDataTools() {
                 }
 
                 // Send parsed JSON to server
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-                const response = await axios.post(`${apiUrl}/products/batch`, { products: uniqueProducts }, {
+                const response = await axios.post(`${API_URL}/products/batch`, { products: uniqueProducts }, {
                     headers: {
                         'Content-Type': 'application/json',
                         'x-user-email': user?.email || ''
