@@ -112,6 +112,8 @@ function HomeContent() {
                 src={activeSeason.hero_banner_image}
                 alt={activeSeason.name}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                fetchPriority="high"
+                loading="eager"
               />
             </div>
           </Link>
