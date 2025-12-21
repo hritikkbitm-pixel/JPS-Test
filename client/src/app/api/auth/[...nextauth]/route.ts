@@ -1,15 +1,10 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 
 export const authOptions: any = {
     providers: [
-        GoogleProvider({
-            clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-        }),
         CredentialsProvider({
             name: "Credentials",
             credentials: {
@@ -49,7 +44,7 @@ export const authOptions: any = {
                         email: user.email,
                         image: user.picture,
                         role: user.role,
-                        token: '', // Add token to satisfy type definition
+                        token: '',
                     };
                 } catch (error) {
                     console.error("Login error:", error);
@@ -87,3 +82,4 @@ export const authOptions: any = {
 const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
+

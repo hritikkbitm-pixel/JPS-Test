@@ -60,12 +60,8 @@ export default function LoginPage() {
                         Sign In
                     </button>
                 </form>
-                <div className="mt-4 text-center">
-                    <button onClick={() => signIn('google')} className="text-blue-600 hover:underline">
-                        Or sign in with Google
-                    </button>
-                </div>
             </div>
         </div>
     );
 }
+

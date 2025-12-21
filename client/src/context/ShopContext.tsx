@@ -23,6 +23,7 @@ interface ShopContextType {
     updateOrderStatus: (orderId: string, status: string) => void;
     addOrderMessage: (orderId: string, text: string, sender: string) => void;
     toggleFeatured: (productId: string) => void;
+    refreshOrders: () => Promise<void>;
     isLoading: boolean;
 }
 
@@ -140,11 +141,13 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                     if (data.length > 0) {
                         setCategories([...data]);
                     } else {
-                        console.log('Categories data is empty, setting empty array.');
-                        setCategories([]);
+                        // Fallback to initialCategories if API returns empty
+                        console.log('Categories data is empty, using initialCategories.');
+                        setCategories(initialCategories);
                     }
                 } else {
                     console.error('Categories fetch failed:', res.statusText);
+                    setCategories(initialCategories);
                 }
             } catch (error) {
                 console.error('Failed to fetch categories:', error);
@@ -153,33 +156,38 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                     console.log('Loading categories from local storage');
                     setCategories(JSON.parse(savedCategories));
                 } else {
-                    console.log('No local storage categories found, setting empty.');
-                    setCategories([]);
+                    console.log('No local storage categories found, using initialCategories.');
+                    setCategories(initialCategories);
                 }
             }
         };
         fetchCategories();
     }, []);
 
+    const fetchOrders = async () => {
+        try {
+            const res = await fetch(`${API_URL}/orders`);
+            if (res.ok) {
+                const data = await res.json();
+                setOrders(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch orders:', error);
+            const savedOrders = localStorage.getItem('shop_orders');
+            if (savedOrders) {
+                setOrders(JSON.parse(savedOrders));
+            } else {
+                setOrders(initialOrders);
+            }
+        }
+    };
+
+    const refreshOrders = async () => {
+        await fetchOrders();
+    };
+
     // Load orders from API
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const res = await fetch(`${API_URL}/orders`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setOrders(data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch orders:', error);
-                const savedOrders = localStorage.getItem('shop_orders');
-                if (savedOrders) {
-                    setOrders(JSON.parse(savedOrders));
-                } else {
-                    setOrders(initialOrders);
-                }
-            }
-        };
         fetchOrders();
     }, []);
 
@@ -364,6 +372,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         updateOrderStatus,
         addOrderMessage,
         toggleFeatured,
+        refreshOrders,
         isLoading
     }), [products, orders, banners, categories, isLoading]);
 

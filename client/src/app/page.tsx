@@ -10,7 +10,16 @@ import CategoryGrid from '@/components/CategoryGrid';
 import SidebarFilter from '@/components/SidebarFilter';
 import FeaturedProducts from '@/components/FeaturedProducts';
 import PromoBanner from '@/components/PromoBanner';
-import { Product } from '@/lib/data';
+import { Product, Banner } from '@/lib/data';
+import { API_URL } from '@/config';
+
+interface ActiveSeason {
+  id: string;
+  name: string;
+  slug: string;
+  hero_banner_image: string;
+  subtitle: string;
+}
 
 function HomeContent() {
   const { products, banners } = useShop();
@@ -18,6 +27,23 @@ function HomeContent() {
   const router = useRouter();
 
   const categoryFromUrl = searchParams.get('category') || 'all';
+  const [activeSeason, setActiveSeason] = useState<ActiveSeason | null>(null);
+
+  // Fetch active season
+  useEffect(() => {
+    const fetchActiveSeason = async () => {
+      try {
+        const res = await fetch(`${API_URL}/seasons/active`);
+        if (res.ok) {
+          const data = await res.json();
+          setActiveSeason(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch active season:', err);
+      }
+    };
+    fetchActiveSeason();
+  }, []);
 
   // State for catalog view
   const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
@@ -78,6 +104,19 @@ function HomeContent() {
 
     return (
       <div key="landing-page">
+        {/* Seasonal Master Banner - Fixed Aspect Ratio Container */}
+        {activeSeason && activeSeason.hero_banner_image && (
+          <Link href={`/season/${activeSeason.slug}`} className="block w-full mb-4">
+            <div className="relative w-full aspect-[21/6] bg-gradient-to-r from-gray-100 to-gray-200 overflow-hidden group cursor-pointer">
+              <img
+                src={activeSeason.hero_banner_image}
+                alt={activeSeason.name}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              />
+            </div>
+          </Link>
+        )}
+
         {/* Hero Carousel */}
         <HeroCarousel banners={heroBanners} />
 

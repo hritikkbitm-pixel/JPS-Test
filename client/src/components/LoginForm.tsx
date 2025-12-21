@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
-import { jwtDecode } from "jwt-decode";
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
-    const { login } = useAuth();
-    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -29,20 +23,6 @@ export default function LoginForm() {
                 if (res?.error) {
                     setError('Invalid email or password.');
                 } else {
-                    // Login successful - AuthContext will likely pick up session change if configured,
-                    // or we can manually trigger a refresh/redirect.
-                    // For now, let's just reload or redirect to ensure state is fresh.
-                    // Ideally, AuthContext should listen to NextAuth session.
-                    // But since we are using a custom AuthContext, we might need to sync it.
-                    // However, the original mock logic called login() directly.
-                    // Let's assume for now we just want to secure the login.
-                    // We can fetch the user details if needed, or rely on the session.
-
-                    // To maintain compatibility with existing AuthContext if it's not fully integrated with NextAuth yet:
-                    // We can't easily get the user object here without another call or session hook.
-                    // But the goal is SECURITY.
-
-                    // Let's redirect to /account which checks session/user.
                     window.location.reload();
                 }
             } catch (err) {
@@ -52,27 +32,6 @@ export default function LoginForm() {
         } else {
             setError('Please enter both email and password.');
         }
-    };
-
-    const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
-        if (credentialResponse.credential) {
-            try {
-                const decoded: any = jwtDecode(credentialResponse.credential);
-                login({
-                    name: decoded.name,
-                    email: decoded.email,
-                    addresses: [],
-                    orders: []
-                });
-            } catch (e) {
-                console.error("Error decoding Google token", e);
-                setError("Failed to sign in with Google.");
-            }
-        }
-    };
-
-    const handleGoogleError = () => {
-        setError("Google Sign-In failed.");
     };
 
     return (
@@ -115,25 +74,6 @@ export default function LoginForm() {
                     </button>
                 </div>
 
-                <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                    </div>
-                </div>
-
-                <div className="flex justify-center mb-4">
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={handleGoogleError}
-                        theme="filled_blue"
-                        shape="rectangular"
-                        width="100%"
-                    />
-                </div>
-
                 <div className="mt-4 text-center">
                     <p className="text-sm text-gray-600">
                         Don't have an account? <span className="text-brand-red cursor-pointer hover:underline">Register</span>
@@ -143,3 +83,4 @@ export default function LoginForm() {
         </div>
     );
 }
+

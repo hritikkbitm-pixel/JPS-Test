@@ -8,17 +8,19 @@ import Link from 'next/link';
 import { useShop } from '@/context/ShopContext';
 
 import { API_URL } from '@/config';
+import { loadRazorpayScript } from '@/utils/razorpay';
 
 declare global {
     interface Window {
         Paytm: any;
+        Razorpay: any;
     }
 }
 
 export default function CartPage() {
     const { cart, cartTotal, updateQuantity, removeFromCart, clearCart } = useCart();
-    const { user, updateUser } = useAuth();
-    const { addOrder } = useShop();
+    const { user, updateUser, refreshUser } = useAuth();
+    const { addOrder, refreshOrders } = useShop();
     const router = useRouter();
 
     const [step, setStep] = useState<'cart' | 'shipping' | 'payment'>('cart');
@@ -106,7 +108,7 @@ export default function CartPage() {
             invoice: '#'
         });
 
-        if (paymentMethod === 'PAYTM' || paymentMethod === 'PHONEPE') {
+        if (paymentMethod === 'PAYTM' || paymentMethod === 'PHONEPE' || paymentMethod === 'RAZORPAY') {
             const newOrder = createOrderObject();
             newOrder.status = 'Pending Payment';
 
@@ -114,7 +116,74 @@ export default function CartPage() {
                 // Save order first
                 await addOrder(newOrder);
 
-                if (paymentMethod === 'PHONEPE') {
+                if (paymentMethod === 'RAZORPAY') {
+                    const res = await fetch(`${API_URL}/payment/razorpay/order`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: cartTotal,
+                            currency: 'INR',
+                            receipt: newOrder.id,
+                        })
+                    });
+                    const orderData = await res.json();
+
+                    if (!orderData.success) {
+                        alert("Razorpay order creation failed: " + orderData.message);
+                        return;
+                    }
+
+                    const scriptLoaded = await loadRazorpayScript();
+                    if (!scriptLoaded) {
+                        alert("Razorpay SDK failed to load. Are you online?");
+                        return;
+                    }
+
+                    const options = {
+                        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                        amount: orderData.amount,
+                        currency: orderData.currency,
+                        name: "JPS Enterprise",
+                        description: "Checkout Payment",
+                        order_id: orderData.order_id,
+                        handler: async function (response: any) {
+                            // Verify payment on server
+                            const verifyRes = await fetch(`${API_URL}/payment/razorpay/verify`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    orderId: newOrder.id,
+                                })
+                            });
+                            const verifyData = await verifyRes.json();
+
+                            if (verifyData.success) {
+                                // Update local state
+                                await refreshOrders();
+                                await refreshUser();
+                                clearCart();
+                                alert("Order placed successfully!");
+                                router.push('/account');
+                            } else {
+                                alert("Payment verification failed: " + verifyData.message);
+                            }
+                        },
+                        prefill: {
+                            name: shippingAddress.fullName,
+                            email: shippingAddress.email,
+                            contact: shippingAddress.phone,
+                        },
+                        theme: {
+                            color: "#E21D26", // brand-red
+                        },
+                    };
+
+                    const rzp = new window.Razorpay(options);
+                    rzp.open();
+                } else if (paymentMethod === 'PHONEPE') {
                     const res = await fetch(`${API_URL}/payment/phonepe/pay`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -208,9 +277,9 @@ export default function CartPage() {
         }
 
         const newOrder = createOrderObject();
-        const updatedOrders = user.orders ? [...user.orders, newOrder] : [newOrder];
-        updateUser({ orders: updatedOrders });
-        addOrder(newOrder);
+        await addOrder(newOrder);
+        await refreshOrders();
+        await refreshUser();
         clearCart();
         alert("Order placed successfully via Cash on Delivery!");
         router.push('/account');
@@ -399,6 +468,21 @@ export default function CartPage() {
                                     <div className="flex flex-col">
                                         <span className="font-bold">Paytm</span>
                                         <span className="text-xs text-gray-500">Wallet, UPI, Cards, Postpaid</span>
+                                    </div>
+                                </label>
+
+                                <label className={`flex items-center p-4 border rounded cursor-pointer ${paymentMethod === 'RAZORPAY' ? 'bg-indigo-50 border-brand-red ring-1 ring-brand-red' : 'bg-white hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        value="RAZORPAY"
+                                        checked={paymentMethod === 'RAZORPAY'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        className="mr-3 h-4 w-4 text-brand-red focus:ring-brand-red"
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="font-bold">Razorpay</span>
+                                        <span className="text-xs text-gray-500">UPI, Cards, NetBanking, Wallets</span>
                                     </div>
                                 </label>
                             </div>

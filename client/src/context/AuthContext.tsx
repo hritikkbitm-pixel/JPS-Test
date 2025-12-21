@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { ShippingAddress, Order } from '@/lib/data';
+import { API_URL } from '@/config';
 
 export interface User {
     name: string;
@@ -19,6 +20,7 @@ interface AuthContextType {
     login: (userData: User) => void;
     logout: () => void;
     updateUser: (userData: Partial<User>) => void;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,6 +59,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoading(false);
     }, [session, status]);
 
+    // Fetch user orders when user email is available
+    useEffect(() => {
+        if (user?.email) {
+            const fetchUserOrders = async () => {
+                try {
+                    const res = await fetch(`${API_URL}/orders/user/${user.email}`);
+                    if (res.ok) {
+                        const orders = await res.json();
+                        setUser(prev => prev ? { ...prev, orders } : null);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch user orders:", error);
+                }
+            };
+            fetchUserOrders();
+        }
+    }, [user?.email]);
+
     const login = (userData: User) => {
         setUser(userData);
         localStorage.setItem('jps_user', JSON.stringify(userData));
@@ -79,8 +99,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
     };
 
+    const refreshUser = async () => {
+        if (!user?.email) return;
+        try {
+            const res = await fetch(`${API_URL}/orders/user/${user.email}`);
+            if (res.ok) {
+                const orders = await res.json();
+                setUser(prev => prev ? { ...prev, orders } : null);
+            }
+        } catch (error) {
+            console.error("Failed to refresh user orders:", error);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, updateUser }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, updateUser, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

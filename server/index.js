@@ -66,6 +66,9 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/audit', require('./routes/audit'));
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/user', require('./routes/user'));
+app.use('/api/seasons', require('./routes/seasons'));
+app.use('/api/campaigns', require('./routes/campaigns'));
+app.use('/api/offer-tiles', require('./routes/offer-tiles'));
 
 app.get('/api', (req, res) => {
     res.json({ message: 'JPS API is operational', version: '1.0' });

@@ -4,6 +4,7 @@ const ProductSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true }, // Keeping original string ID for compatibility
     name: { type: String, required: true },
     price: { type: Number, required: true },
+    mrp: { type: Number },
     stock: { type: Number, required: true },
     category: { type: String, required: true },
     brand: { type: String, required: true },

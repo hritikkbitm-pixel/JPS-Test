@@ -73,12 +73,24 @@ export default function ProductHero({ product }: ProductHeroProps) {
                     </div>
 
                     <div className="mt-auto">
-                        <div className="flex items-end gap-3 mb-6">
-                            <span className="text-4xl font-black text-brand-red tracking-tight">₹{product.price.toLocaleString()}</span>
+                        <div className="flex items-baseline gap-3 mb-1">
+                            <span className="text-4xl font-black text-brand-red tracking-tight">Rs. {product.price.toLocaleString()}</span>
+                            {product.mrp && product.mrp > product.price && (
+                                <span className="text-xl text-gray-400 line-through">Rs. {product.mrp.toLocaleString()}</span>
+                            )}
+                        </div>
+
+                        {product.mrp && product.mrp > product.price && (
+                            <div className="text-sm text-red-500 font-medium mb-4">
+                                Discount: Rs. {(product.mrp - product.price).toLocaleString()} ({Math.ceil(((product.mrp - product.price) / product.mrp) * 100)}%)
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-3 mb-6">
                             {product.available ? (
-                                <span className="text-green-600 font-bold bg-green-50 px-2 py-1 rounded text-xs mb-2">● IN STOCK</span>
+                                <span className="text-green-600 font-bold bg-green-50 px-2 py-1 rounded text-xs">● IN STOCK</span>
                             ) : (
-                                <span className="text-red-500 font-bold bg-red-50 px-2 py-1 rounded text-xs mb-2">● OUT OF STOCK</span>
+                                <span className="text-red-500 font-bold bg-red-50 px-2 py-1 rounded text-xs">● OUT OF STOCK</span>
                             )}
                         </div>
 

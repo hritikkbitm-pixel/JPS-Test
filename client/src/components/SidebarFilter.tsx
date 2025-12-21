@@ -37,7 +37,7 @@ export default function SidebarFilter({ products, onFilterChange, category }: Si
 
         // Availability
         if (inStockOnly) {
-            filtered = filtered.filter(p => p.stock > 0 && p.available !== false);
+            filtered = filtered.filter(p => p.available !== false);
         }
 
         onFilterChange(filtered);

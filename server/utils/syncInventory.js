@@ -55,8 +55,9 @@ const syncInventory = async () => {
                 brand: row.brand || row['"brand"'] || '',
                 sold: Number(row.sold || row['"sold"']) || 0,
                 available: (row.stock_status || row['"stock_status"']) === 'In Stock',
-                stock: Number(row.stock || row['"stock"'] || 0),
+                stock: (row.stock_status || row['"stock_status"']) === 'In Stock' && !Number(row.stock || row['"stock"']) ? 10 : Number(row.stock || row['"stock"'] || 0),
                 price: Number((row.price || row['"price"'])?.toString().replace(/[^0-9.]/g, '') || 0),
+                mrp: Number((row.mrp || row['"mrp"'])?.toString().replace(/[^0-9.]/g, '') || 0) || undefined,
                 name: row.name || row['"name"'] || row.full_name || row['"full_name"'] || id,
                 image: row.image || row['"image"'] || row.image_url || row['"image_url"'] || '',
                 images: [],
@@ -64,7 +65,7 @@ const syncInventory = async () => {
             };
 
             // Populate specs
-            const coreFields = ['id', 'name', 'full_name', 'price', 'stock', 'stock_status', 'category', 'brand', 'image', 'image_url', 'images', 'sold', 'available', '"id"', '"name"', '"full_name"', '"price"', '"stock"', '"stock_status"', '"category"', '"brand"', '"image"', '"image_url"', '"images"', '"sold"', '"available"'];
+            const coreFields = ['id', 'name', 'full_name', 'price', 'mrp', 'stock', 'stock_status', 'category', 'brand', 'image', 'image_url', 'images', 'sold', 'available', '"id"', '"name"', '"full_name"', '"price"', '"mrp"', '"stock"', '"stock_status"', '"category"', '"brand"', '"image"', '"image_url"', '"images"', '"sold"', '"available"'];
 
             Object.keys(row).forEach(key => {
                 if (!coreFields.includes(key)) {

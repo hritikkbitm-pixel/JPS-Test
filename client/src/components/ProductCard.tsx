@@ -13,13 +13,22 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
     const { addToCart } = useCart();
     const isAvailable = product.available !== false;
+    const hasDiscount = product.mrp && product.mrp > product.price;
+    const discountPercentage = hasDiscount ? Math.ceil(((product.mrp! - product.price) / product.mrp!) * 100) : 0;
 
     return (
         <div className={`bg-white border border-gray-100 rounded-lg product-card flex flex-col relative group overflow-hidden ${!isAvailable ? 'opacity-75 grayscale' : ''}`}>
+            {hasDiscount && (
+                <div className="absolute top-2 left-2 z-10">
+                    <span className="bg-[#e53e3e] text-white text-[10px] font-bold px-2 py-1 rounded-sm shadow-sm">
+                        -{discountPercentage}%
+                    </span>
+                </div>
+            )}
             <Link href={`/product/${product.id}`} className="block">
                 <div className="h-48 p-6 flex items-center justify-center relative cursor-pointer">
                     <img src={product.image || "/placeholder.svg"} className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-110" alt={product.name} />
-                    {product.stock !== undefined && product.stock < 5 && isAvailable && (
+                    {product.stock !== undefined && product.stock < 5 && isAvailable && !hasDiscount && (
                         <span className="absolute top-2 left-2 text-red-600 text-[10px] font-bold uppercase animate-pulse">Low Stock</span>
                     )}
                     {!isAvailable && (
@@ -34,8 +43,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </Link>
                 <div className="mt-auto">
                     <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs text-gray-400 line-through">₹{Math.round(product.price * 1.1).toLocaleString()}</span>
-                        <span className="text-lg font-black text-brand-red">₹{product.price.toLocaleString()}</span>
+                        {hasDiscount ? (
+                            <>
+                                <span className="text-xs text-gray-400 line-through">Rs. {product.mrp?.toLocaleString()}</span>
+                                <span className="text-lg font-black text-brand-red">Rs. {product.price.toLocaleString()}</span>
+                            </>
+                        ) : (
+                            <span className="text-lg font-black text-brand-red ml-auto">Rs. {product.price.toLocaleString()}</span>
+                        )}
                     </div>
                     {isAvailable ? (
                         <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="add-btn w-full bg-gray-100 text-gray-800 font-bold py-2 rounded text-xs uppercase tracking-wider hover:shadow-md transition flex items-center justify-center gap-2">

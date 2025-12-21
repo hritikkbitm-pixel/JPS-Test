@@ -6,9 +6,12 @@ import OrdersView from '@/components/admin/OrdersView';
 import ProductsView from '@/components/admin/ProductsView';
 import MarketingView from '@/components/admin/MarketingView';
 import CategoriesView from '@/components/admin/CategoriesView';
+import SeasonsView from '@/components/admin/SeasonsView';
+import CampaignsView from '@/components/admin/CampaignsView';
+import OfferTilesView from '@/components/admin/OfferTilesView';
 
 export default function AdminPage() {
-    const [view, setView] = useState('dashboard'); // dashboard, orders, products, marketing, categories
+    const [view, setView] = useState('dashboard');
 
     return (
         <div className="flex min-h-screen bg-gray-100 font-sans">
@@ -18,36 +21,34 @@ export default function AdminPage() {
                     <h1 className="text-2xl font-black tracking-tighter text-brand-red">ADMIN<span className="text-white">PANEL</span></h1>
                 </div>
                 <nav className="flex-grow p-4 space-y-2">
-                    <button
-                        onClick={() => setView('dashboard')}
-                        className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'dashboard' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}
-                    >
+                    <button onClick={() => setView('dashboard')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'dashboard' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
                         <i className="fas fa-chart-line w-5 text-center"></i> Dashboard
                     </button>
-                    <button
-                        onClick={() => setView('orders')}
-                        className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'orders' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}
-                    >
+                    <button onClick={() => setView('orders')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'orders' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
                         <i className="fas fa-shopping-cart w-5 text-center"></i> Orders
                     </button>
-                    <button
-                        onClick={() => setView('products')}
-                        className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'products' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}
-                    >
+                    <button onClick={() => setView('products')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'products' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
                         <i className="fas fa-box w-5 text-center"></i> Products
                     </button>
-                    <button
-                        onClick={() => setView('marketing')}
-                        className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'marketing' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}
-                    >
+                    <button onClick={() => setView('marketing')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'marketing' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
                         <i className="fas fa-bullhorn w-5 text-center"></i> Ad & Offers
                     </button>
-                    <button
-                        onClick={() => setView('categories')}
-                        className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'categories' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}
-                    >
+                    <button onClick={() => setView('categories')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'categories' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
                         <i className="fas fa-th-large w-5 text-center"></i> Categories
                     </button>
+
+                    <div className="border-t border-gray-800 my-4 pt-4">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 px-3">Campaigns</p>
+                        <button onClick={() => setView('seasons')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'seasons' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
+                            <i className="fas fa-snowflake w-5 text-center"></i> Seasons
+                        </button>
+                        <button onClick={() => setView('campaigns')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'campaigns' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
+                            <i className="fas fa-tags w-5 text-center"></i> Campaigns
+                        </button>
+                        <button onClick={() => setView('tiles')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'tiles' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
+                            <i className="fas fa-th w-5 text-center"></i> Offer Tiles
+                        </button>
+                    </div>
                 </nav>
                 <div className="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">
                     v1.0.0 Admin Console
@@ -65,7 +66,10 @@ export default function AdminPage() {
                 {view === 'products' && <ProductsView />}
                 {view === 'marketing' && <MarketingView />}
                 {view === 'categories' && <CategoriesView />}
-            </div >
+                {view === 'seasons' && <SeasonsView />}
+                {view === 'campaigns' && <CampaignsView />}
+                {view === 'tiles' && <OfferTilesView />}
+            </div>
         </div>
     );
 }
