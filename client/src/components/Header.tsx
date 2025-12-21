@@ -29,7 +29,7 @@ export default function Header() {
                         </a>
                     </div>
                     <div className="flex gap-6">
-                        <span className="text-white font-bold animate-pulse">BLACK NOVEMBER DEALS LIVE!</span>
+                        <a href="/season/christmas-sale" className="text-white font-bold animate-pulse hover:text-red-400 transition">🎄 CHRISTMAS SALE IS LIVE!</a>
                         <span className="hover:text-white cursor-pointer">My Account</span>
                         <span className="hover:text-white cursor-pointer">Wishlist</span>
                         <span className="hover:text-white cursor-pointer" onClick={toggleCart}>Checkout</span>
