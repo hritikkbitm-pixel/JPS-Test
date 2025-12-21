@@ -30,8 +30,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preconnect to critical origins for faster LCP */}
-        <link rel="preconnect" href="https://jps-test.onrender.com" />
-        <link rel="preconnect" href="https://img.freepik.com" />
+        <link rel="preconnect" href="https://jps-test.onrender.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://img.freepik.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
