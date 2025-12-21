@@ -1,6 +1,72 @@
 import type { NextConfig } from "next";
+import withPWAInit from "next-pwa";
 
 const isDev = process.env.NODE_ENV === 'development';
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: isDev, // Disable PWA in development
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "google-fonts",
+        expiration: {
+          maxEntries: 10,
+          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "cdnjs",
+        expiration: {
+          maxEntries: 20,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "images",
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /\/_next\/static\/.*/i,
+      handler: "CacheFirst",
+      options: {
+        cacheName: "static-assets",
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+        },
+      },
+    },
+    {
+      urlPattern: /\/api\/.*/i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "api-cache",
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 60 * 5, // 5 minutes
+        },
+        networkTimeoutSeconds: 10,
+      },
+    },
+  ],
+});
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -56,6 +122,4 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
-
-
+export default withPWA(nextConfig);

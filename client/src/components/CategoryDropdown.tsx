@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useShop } from '@/context/ShopContext';
+import { prefetchCategory } from '@/hooks/usePrefetch';
 
 // Icon mapping for well-known categories
 const iconMap: Record<string, string> = {
@@ -37,6 +38,12 @@ interface SubcategoryGroup {
 export default function CategoryDropdown() {
     const { categories, products } = useShop();
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+    // Prefetch category products when hovering
+    const handleCategoryHover = useCallback((categoryId: string) => {
+        setActiveCategory(categoryId);
+        prefetchCategory(categoryId);
+    }, []);
 
     // Generate subcategories from products grouped by brand and series
     const subcategories = useMemo(() => {
@@ -109,7 +116,7 @@ export default function CategoryDropdown() {
                             <div
                                 key={category.id}
                                 className="relative"
-                                onMouseEnter={() => setActiveCategory(category.id)}
+                                onMouseEnter={() => handleCategoryHover(category.id)}
                                 onMouseLeave={() => setActiveCategory(null)}
                             >
                                 <Link
@@ -127,7 +134,7 @@ export default function CategoryDropdown() {
                                 {activeCategory === category.id && subcategories[category.id]?.length > 0 && (
                                     <div
                                         className="absolute left-full top-0 bg-white shadow-xl border-l border-gray-100 min-w-[500px] p-6 grid grid-cols-2 gap-6"
-                                        onMouseEnter={() => setActiveCategory(category.id)}
+                                        onMouseEnter={() => handleCategoryHover(category.id)}
                                     >
                                         {subcategories[category.id].map((group, idx) => (
                                             <div key={idx}>

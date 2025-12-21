@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { prefetchUserAddresses } from '@/hooks/usePrefetch';
 
 import { Product } from '@/lib/data';
 
@@ -49,6 +50,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
             return [...prev, { ...product, stock: 1 }];
         });
         setIsCartOpen(true);
+        // Prefetch user addresses for checkout optimization
+        prefetchUserAddresses();
     };
 
     const removeFromCart = (index: number) => {

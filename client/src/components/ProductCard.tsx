@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useCart } from '../context/CartContext';
 import { Product } from '@/lib/data';
+import { useHoverPrefetch, prefetchProduct } from '@/hooks/usePrefetch';
 
 import Link from 'next/link';
 
@@ -16,8 +17,16 @@ export default function ProductCard({ product }: ProductCardProps) {
     const hasDiscount = product.mrp && product.mrp > product.price;
     const discountPercentage = hasDiscount ? Math.ceil(((product.mrp! - product.price) / product.mrp!) * 100) : 0;
 
+    // Prefetch product details on hover
+    const prefetchFn = useCallback(() => prefetchProduct(product.id), [product.id]);
+    const { onMouseEnter, onMouseLeave } = useHoverPrefetch(prefetchFn);
+
     return (
-        <div className={`bg-white border border-gray-100 rounded-lg product-card flex flex-col relative group overflow-hidden ${!isAvailable ? 'opacity-75 grayscale' : ''}`}>
+        <div
+            className={`bg-white border border-gray-100 rounded-lg product-card flex flex-col relative group overflow-hidden ${!isAvailable ? 'opacity-75 grayscale' : ''}`}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
             {hasDiscount && (
                 <div className="absolute top-2 left-2 z-10">
                     <span className="bg-[#e53e3e] text-white text-[10px] font-bold px-2 py-1 rounded-sm shadow-sm">
