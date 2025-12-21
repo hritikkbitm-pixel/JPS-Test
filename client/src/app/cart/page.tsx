@@ -145,7 +145,7 @@ export default function CartPage() {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                 amount: orderData.amount,
                 currency: orderData.currency,
-                name: "JPS Enterprise",
+                name: "JPS Enterprises",
                 description: "Checkout Payment",
                 order_id: orderData.order_id,
                 handler: async function (response: any) {

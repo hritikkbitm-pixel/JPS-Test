@@ -32,7 +32,7 @@ export default function PaymentSuccessPage() {
                     <i className="fas fa-check text-4xl text-green-600"></i>
                 </div>
                 <h1 className="text-3xl font-black text-gray-800 uppercase mb-2">Payment Successful!</h1>
-                <p className="text-gray-600 mb-6">Your order has been placed successfully. Thank you for shopping with JPS Enterprise.</p>
+                <p className="text-gray-600 mb-6">Your order has been placed successfully. Thank you for shopping with JPS Enterprises.</p>
 
                 <div className="bg-gray-50 p-4 rounded mb-8 text-left">
                     <div className="flex justify-between text-sm mb-1">

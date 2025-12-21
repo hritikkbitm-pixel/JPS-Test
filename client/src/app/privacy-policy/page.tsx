@@ -7,7 +7,7 @@ export default function PrivacyPolicyPage() {
 
             <div className="prose prose-lg text-gray-700">
                 <p className="mb-6">
-                    <strong>JPS Enterprise</strong> (“we”, “our”, “us”) is committed to protecting your privacy.
+                    <strong>JPS Enterprises</strong> (“we”, “our”, “us”) is committed to protecting your privacy.
                     This Privacy Policy outlines how we collect, use, store, and safeguard your personal information.
                 </p>
 

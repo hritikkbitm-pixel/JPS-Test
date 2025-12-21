@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JPS Enterprise | High-Performance PC Hardware",
+  title: "JPS Enterprises | High-Performance PC Hardware",
   description: "India's premier destination for high-end custom PC builds.",
 };
 

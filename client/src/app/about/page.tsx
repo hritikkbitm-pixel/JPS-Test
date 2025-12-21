@@ -7,7 +7,7 @@ export default function AboutPage() {
 
             <div className="prose prose-lg text-gray-700">
                 <p className="lead text-xl mb-6">
-                    Welcome to <strong>JPS Enterprise</strong>, your trusted destination for high-quality computer components, electronics, and IT accessories.
+                    Welcome to <strong>JPS Enterprises</strong>, your trusted destination for high-quality computer components, electronics, and IT accessories.
                 </p>
                 <p className="mb-8">
                     Our mission is to deliver genuine products at honest prices with a seamless shopping experience.
@@ -23,7 +23,7 @@ export default function AboutPage() {
                     <p><strong>Contact:</strong> 9415409650</p>
                 </div>
 
-                <h2 className="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">At JPS Enterprise, we focus on:</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 border-b pb-2">At JPS Enterprises, we focus on:</h2>
                 <ul className="list-disc pl-6 space-y-2 mb-10 marker:text-brand-red">
                     <li><strong>100% Genuine & Brand-New Products</strong></li>
                     <li><strong>Transparent Pricing</strong></li>

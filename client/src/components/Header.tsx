@@ -49,7 +49,7 @@ export default function Header() {
                                     JPS
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <span className="font-black text-2xl leading-none tracking-tighter text-gray-900">ENTERPRISE</span>
+                                    <span className="font-black text-2xl leading-none tracking-tighter text-gray-900">ENTERPRISES</span>
                                     <span className="text-[10px] text-gray-500 uppercase tracking-[0.3em] font-bold">Gaming & Workstations</span>
                                 </div>
                             </Link>

@@ -6,7 +6,7 @@ export default function TermsPage() {
             <h1 className="text-4xl font-black mb-8 uppercase tracking-tight text-gray-900">Terms & Conditions</h1>
 
             <p className="text-lg mb-8 text-gray-700">
-                By using our website (<strong>JPS Enterprise</strong>), you agree to the following terms:
+                By using our website (<strong>JPS Enterprises</strong>), you agree to the following terms:
             </p>
 
             <div className="space-y-10 text-gray-700">
@@ -64,7 +64,7 @@ export default function TermsPage() {
                         <span className="bg-gray-100 px-3 py-1 rounded mr-3 text-lg">6</span>
                         Limitation of Liability
                     </h2>
-                    <p className="pl-14 mb-2">JPS Enterprise is not responsible for:</p>
+                    <p className="pl-14 mb-2">JPS Enterprises is not responsible for:</p>
                     <ul className="list-disc pl-14 space-y-2">
                         <li>Delays caused by courier partners</li>
                         <li>Damages resulting from improper use of products</li>
