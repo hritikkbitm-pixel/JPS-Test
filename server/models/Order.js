@@ -20,6 +20,7 @@ const OrderSchema = new mongoose.Schema({
     total: { type: Number, required: true },
     status: { type: String, default: 'Pending' },
     shippingAddress: {
+        fullName: String,
         label: String,
         line1: String,
         line2: String,
@@ -28,6 +29,9 @@ const OrderSchema = new mongoose.Schema({
         state: String,
         phone: String
     },
+    paymentMethod: { type: String },
+    isGuestOrder: { type: Boolean, default: false },
+    whatsappNumber: { type: String },
     messages: [{
         text: String,
         date: String,
@@ -37,3 +41,4 @@ const OrderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);
+
