@@ -29,6 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* PWA manifest and theme */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#dc2626" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
         {/* Preconnect to critical origins for faster LCP */}
         <link rel="preconnect" href="https://jps-test.onrender.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />

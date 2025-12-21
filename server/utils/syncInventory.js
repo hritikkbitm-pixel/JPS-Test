@@ -15,11 +15,10 @@ const syncInventory = async () => {
 
     const files = fs.readdirSync(productsDir).filter(file => file.endsWith('.csv'));
     let totalUpdated = 0;
-    let totalCreated = 0;
 
     for (const file of files) {
         const filePath = path.join(productsDir, file);
-        const category = file.replace('.csv', ''); // e.g. 'cpus' -> 'cpus'
+        const category = file.replace('.csv', '');
 
         let dbCategory = category;
         if (category === 'cpus') dbCategory = 'cpu';
@@ -39,6 +38,7 @@ const syncInventory = async () => {
         });
 
         const syncedIds = [];
+        const bulkOps = [];
 
         for (const row of results) {
             const id = row.id || row['"id"'];
@@ -60,24 +60,32 @@ const syncInventory = async () => {
                 mrp: Number((row.mrp || row['"mrp"'])?.toString().replace(/[^0-9.]/g, '') || 0) || undefined,
                 name: row.name || row['"name"'] || row.full_name || row['"full_name"'] || id,
                 image: row.image || row['"image"'] || row.image_url || row['"image_url"'] || '',
-                images: [],
-                specs: {}
+                // images: [], // Removed to avoid overwriting existing images array if present
+                // specs: {}   // Handle specs separately if needed, but for bulkWrite update usually $set is safer
             };
 
             // Populate specs
             const coreFields = ['id', 'name', 'full_name', 'price', 'mrp', 'stock', 'stock_status', 'category', 'brand', 'image', 'image_url', 'images', 'sold', 'available', '"id"', '"name"', '"full_name"', '"price"', '"mrp"', '"stock"', '"stock_status"', '"category"', '"brand"', '"image"', '"image_url"', '"images"', '"sold"', '"available"'];
-
+            const specs = {};
             Object.keys(row).forEach(key => {
                 if (!coreFields.includes(key)) {
-                    updateData.specs[key] = row[key];
+                    specs[key] = row[key];
                 }
             });
+            updateData.specs = specs;
 
-            await Product.findOneAndUpdate(
-                { id: id },
-                updateData,
-                { upsert: true, new: true, setDefaultsOnInsert: true }
-            );
+            bulkOps.push({
+                updateOne: {
+                    filter: { id: id },
+                    update: { $set: updateData },
+                    upsert: true
+                }
+            });
+        }
+
+        if (bulkOps.length > 0) {
+            await Product.bulkWrite(bulkOps);
+            totalUpdated += bulkOps.length;
         }
 
         // Cleanup: Remove products in this category that are NOT in the CSV
@@ -92,7 +100,7 @@ const syncInventory = async () => {
         }
     }
 
-    console.log(`🎉 Inventory Sync Complete.`);
+    console.log(`🎉 Inventory Sync Complete. Processed ${totalUpdated} items.`);
 };
 
 module.exports = syncInventory;
