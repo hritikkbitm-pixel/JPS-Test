@@ -144,6 +144,18 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                         // Fallback to initialCategories if API returns empty
                         console.log('Categories data is empty, using initialCategories.');
                         setCategories(initialCategories);
+                        // Seed categories to DB
+                        initialCategories.forEach(async (cat) => {
+                            try {
+                                await fetch(`${API_URL}/categories`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                                    body: JSON.stringify(cat)
+                                });
+                            } catch (e) {
+                                console.error('Failed to seed category:', cat.label, e);
+                            }
+                        });
                     }
                 } else {
                     console.error('Categories fetch failed:', res.statusText);
