@@ -4,7 +4,7 @@ export interface BasePart {
     price: number;
     image: string;
     brand: string;
-    category: 'cpu' | 'motherboard' | 'ram' | 'gpu' | 'case' | 'cooler' | 'storage' | 'psu';
+    category: 'cpu' | 'motherboard' | 'ram' | 'gpu' | 'case' | 'cooler' | 'storage' | 'psu' | 'mouse' | 'keyboard' | 'laptop' | 'monitor';
 }
 
 export interface CPU extends BasePart {

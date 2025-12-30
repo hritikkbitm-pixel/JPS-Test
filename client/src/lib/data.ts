@@ -127,7 +127,11 @@ export const initialCategories: Category[] = [
     { id: 'storage', label: 'Storage', image: 'https://img.freepik.com/free-photo/hard-disk-drive-inside_23-2150834140.jpg' },
     { id: 'case', label: 'Cabinets', image: 'https://img.freepik.com/free-photo/modern-computer-case-with-rgb-lighting_23-2150834145.jpg' },
     { id: 'psu', label: 'Power Supply', image: 'https://img.freepik.com/free-photo/computer-power-supply-unit_23-2150834150.jpg' },
-    { id: 'cooling', label: 'Cooling', image: 'https://img.freepik.com/free-photo/cpu-cooler-fan_23-2150834155.jpg' }
+    { id: 'cooling', label: 'Cooling', image: 'https://img.freepik.com/free-photo/cpu-cooler-fan_23-2150834155.jpg' },
+    { id: 'mouse', label: 'Mice', image: 'https://img.freepik.com/free-photo/computer-mouse-isolated_23-2150834160.jpg' },
+    { id: 'keyboard', label: 'Keyboards', image: 'https://img.freepik.com/free-photo/computer-keyboard-isolated_23-2150834165.jpg' },
+    { id: 'laptop', label: 'Laptops', image: 'https://img.freepik.com/free-photo/laptop-isolated-white-background_23-2150834170.jpg' },
+    { id: 'monitor', label: 'Monitors', image: 'https://img.freepik.com/free-photo/monitor-isolated-white-background_23-2150834175.jpg' }
 ];
 
 export const banners: Banner[] = [

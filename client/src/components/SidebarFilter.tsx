@@ -39,7 +39,28 @@ export default function SidebarFilter({ products, onFilterChange, category, init
             const chipset = specs?.chipset as string;
             const series = specs?.series as string;
 
-            if (chipset) {
+            // Robust detection logic
+            const textToCheck = [
+                chipset || '',
+                series || '',
+                p.name || '',
+                p.brand || ''
+            ].join(' ').toUpperCase();
+
+            let detectedType = '';
+            if (textToCheck.includes('NVIDIA') || textToCheck.includes('GEFORCE') || textToCheck.includes('RTX') || textToCheck.includes('GTX')) {
+                detectedType = 'NVIDIA';
+            } else if (textToCheck.includes('AMD') || textToCheck.includes('RADEON') || textToCheck.includes('RX')) {
+                detectedType = 'AMD';
+            }
+
+            if (detectedType) {
+                chipsets.add(detectedType);
+                if (series) {
+                    seriesByChipset[detectedType].add(series);
+                }
+            } else if (chipset) {
+                // Fallback: If we can't detect type but chipset exists, try to categorize it
                 chipsets.add(chipset);
                 if (series) {
                     if (chipset.toUpperCase().includes('NVIDIA')) {

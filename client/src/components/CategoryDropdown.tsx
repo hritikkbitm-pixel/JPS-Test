@@ -15,6 +15,10 @@ const iconMap: Record<string, string> = {
     'case': 'fas fa-box',
     'psu': 'fas fa-plug',
     'cooling': 'fas fa-fan',
+    'mouse': 'fas fa-mouse',
+    'keyboard': 'fas fa-keyboard',
+    'laptop': 'fas fa-laptop',
+    'monitor': 'fas fa-desktop',
     'all': 'fas fa-th-large'
 };
 
@@ -27,7 +31,11 @@ const categoryLabels: Record<string, string> = {
     'storage': 'SSD',
     'case': 'PC Cabinet',
     'psu': 'Power Supply',
-    'cooling': 'CPU Coolers'
+    'cooling': 'CPU Coolers',
+    'mouse': 'Mice',
+    'keyboard': 'Keyboards',
+    'laptop': 'Laptops',
+    'monitor': 'Monitors'
 };
 
 interface SubcategoryGroup {
@@ -80,12 +88,19 @@ export default function CategoryDropdown() {
                 catProducts.forEach(p => {
                     const specs = p.specs as Record<string, string> | undefined;
                     const series = specs?.series || (p as any).series;
-                    const chipset = specs?.chipset || (p as any).chipset || '';
+
+                    // Robust detection logic
+                    const textToCheck = [
+                        specs?.chipset || '',
+                        series || '',
+                        p.name || '',
+                        p.brand || ''
+                    ].join(' ').toUpperCase();
 
                     if (series) {
-                        if (chipset.toUpperCase().includes('NVIDIA')) {
+                        if (textToCheck.includes('NVIDIA') || textToCheck.includes('GEFORCE') || textToCheck.includes('RTX') || textToCheck.includes('GTX')) {
                             nvidiaSeriesMap.set(series, (nvidiaSeriesMap.get(series) || 0) + 1);
-                        } else if (chipset.toUpperCase().includes('AMD')) {
+                        } else if (textToCheck.includes('AMD') || textToCheck.includes('RADEON') || textToCheck.includes('RX')) {
                             amdSeriesMap.set(series, (amdSeriesMap.get(series) || 0) + 1);
                         }
                     }
@@ -176,8 +191,8 @@ export default function CategoryDropdown() {
                                 {activeCategory === category.id && subcategories[category.id]?.length > 0 && (
                                     <div
                                         className={`absolute left-full top-0 bg-white shadow-xl border-l border-gray-100 p-6 grid gap-6 ${category.id === 'gpu' && subcategories[category.id].length >= 3
-                                                ? 'min-w-[650px] grid-cols-3'
-                                                : 'min-w-[500px] grid-cols-2'
+                                            ? 'min-w-[650px] grid-cols-3'
+                                            : 'min-w-[500px] grid-cols-2'
                                             }`}
                                         onMouseEnter={() => handleCategoryHover(category.id)}
                                     >
@@ -203,8 +218,8 @@ export default function CategoryDropdown() {
 
                                         {/* View All Link */}
                                         <div className={`pt-4 border-t border-gray-100 ${category.id === 'gpu' && subcategories[category.id].length >= 3
-                                                ? 'col-span-3'
-                                                : 'col-span-2'
+                                            ? 'col-span-3'
+                                            : 'col-span-2'
                                             }`}>
                                             <Link
                                                 href={`/?category=${category.id}`}

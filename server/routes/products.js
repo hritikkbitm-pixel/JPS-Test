@@ -25,6 +25,10 @@ const getCsvPath = (category) => {
     else if (cat === 'psu') filename = 'psu.csv';
     else if (cat === 'case') filename = 'cabinets.csv';
     else if (cat === 'cooling' || cat === 'cooler') filename = 'coolers.csv';
+    else if (cat === 'mouse' || cat === 'mice') filename = 'mice.csv';
+    else if (cat === 'keyboard' || cat === 'keyboards') filename = 'keyboards.csv';
+    else if (cat === 'laptop' || cat === 'laptops') filename = 'laptops.csv';
+    else if (cat === 'monitor' || cat === 'monitors') filename = 'monitors.csv';
     else return null;
 
     return path.join(PRODUCTS_DIR, filename);
@@ -224,6 +228,10 @@ router.post('/cat/:category/csv', checkAuth, upload.single('file'), async (req, 
     else if (category === 'gpus' || category === 'gpu') dbCategory = 'gpu';
     else if (category === 'cabinets' || category === 'case') dbCategory = 'case';
     else if (category === 'coolers' || category === 'cooler' || category === 'cooling') dbCategory = 'cooling';
+    else if (category === 'mice' || category === 'mouse') dbCategory = 'mouse';
+    else if (category === 'keyboards' || category === 'keyboard') dbCategory = 'keyboard';
+    else if (category === 'laptops' || category === 'laptop') dbCategory = 'laptop';
+    else if (category === 'monitors' || category === 'monitor') dbCategory = 'monitor';
     else if (category === 'ram') dbCategory = 'ram';
     else if (category === 'storage') dbCategory = 'storage';
     else if (category === 'psu') dbCategory = 'psu';
