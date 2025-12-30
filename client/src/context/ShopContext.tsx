@@ -292,25 +292,34 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
     const addBanner = async (banner: Banner) => {
         const newBanner = { ...banner, id: Math.random().toString(36).substr(2, 9) };
-        setBanners(prev => [...prev, newBanner]);
         try {
-            await fetch(`${API_URL}/banners`, {
+            const res = await fetch(`${API_URL}/banners`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify(newBanner)
             });
+            if (res.ok) {
+                const savedBanner = await res.json();
+                setBanners(prev => [...prev, savedBanner]);
+            } else {
+                console.error('Failed to add banner:', await res.text());
+            }
         } catch (error) {
             console.error('Failed to add banner:', error);
         }
     };
 
     const removeBanner = async (id: string) => {
-        setBanners(prev => prev.filter(b => b.id !== id));
         try {
-            await fetch(`${API_URL}/banners/${id}`, {
+            const res = await fetch(`${API_URL}/banners/${id}`, {
                 method: 'DELETE',
                 headers: { ...getAuthHeaders() }
             });
+            if (res.ok) {
+                setBanners(prev => prev.filter(b => b.id !== id));
+            } else {
+                console.error('Failed to remove banner:', await res.text());
+            }
         } catch (error) {
             console.error('Failed to remove banner:', error);
         }

@@ -213,29 +213,97 @@ router.get('/cat/:category/csv', checkAuth, async (req, res) => {
     res.download(csvPath, filename);
 });
 
-// Upload Category CSV
+// Upload Category CSV - writes directly to MongoDB (not file system)
 router.post('/cat/:category/csv', checkAuth, upload.single('file'), async (req, res) => {
-    const csvPath = getCsvPath(req.params.category);
-    if (!csvPath) return res.status(400).json({ message: 'Invalid category' });
+    const category = req.params.category.toLowerCase();
+
+    // Map category names to database category values
+    let dbCategory = category;
+    if (category === 'cpus' || category === 'cpu') dbCategory = 'cpu';
+    else if (category === 'motherboards' || category === 'motherboard') dbCategory = 'motherboard';
+    else if (category === 'gpus' || category === 'gpu') dbCategory = 'gpu';
+    else if (category === 'cabinets' || category === 'case') dbCategory = 'case';
+    else if (category === 'coolers' || category === 'cooler' || category === 'cooling') dbCategory = 'cooling';
+    else if (category === 'ram') dbCategory = 'ram';
+    else if (category === 'storage') dbCategory = 'storage';
+    else if (category === 'psu') dbCategory = 'psu';
 
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
 
     try {
-        // Overwrite existing CSV with uploaded file
-        fs.renameSync(req.file.path, csvPath);
+        // Parse CSV directly from uploaded file
+        const results = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on('data', (data) => results.push(data))
+                .on('end', resolve)
+                .on('error', reject);
+        });
 
-        // Trigger Sync
-        await syncInventory();
+        // Clean up temp file
+        fs.unlinkSync(req.file.path);
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or invalid' });
+        }
+
+        // Transform and upsert to MongoDB
+        const bulkOps = [];
+        for (const row of results) {
+            const id = row.id || row['"id"'];
+            if (!id) continue;
+
+            const updateData = {
+                id: id,
+                category: dbCategory,
+                brand: row.brand || row['"brand"'] || '',
+                sold: Number(row.sold || row['"sold"']) || 0,
+                available: (row.stock_status || row['"stock_status"']) === 'In Stock',
+                stock: (row.stock_status || row['"stock_status"']) === 'In Stock' && !Number(row.stock || row['"stock"']) ? 10 : Number(row.stock || row['"stock"'] || 0),
+                price: Number((row.price || row['"price"'])?.toString().replace(/[^0-9.]/g, '') || 0),
+                mrp: Number((row.mrp || row['"mrp"'])?.toString().replace(/[^0-9.]/g, '') || 0) || undefined,
+                name: row.name || row['"name"'] || row.full_name || row['"full_name"'] || id,
+                image: row.image || row['"image"'] || row.image_url || row['"image_url"'] || '',
+            };
+
+            // Populate specs from remaining fields
+            const coreFields = ['id', 'name', 'full_name', 'price', 'mrp', 'stock', 'stock_status', 'category', 'brand', 'image', 'image_url', 'images', 'sold', 'available'];
+            const specs = {};
+            Object.keys(row).forEach(key => {
+                const cleanKey = key.replace(/"/g, '');
+                if (!coreFields.includes(cleanKey)) {
+                    specs[cleanKey] = row[key];
+                }
+            });
+            updateData.specs = specs;
+
+            bulkOps.push({
+                updateOne: {
+                    filter: { id: id },
+                    update: { $set: updateData },
+                    upsert: true
+                }
+            });
+        }
+
+        if (bulkOps.length > 0) {
+            await Product.bulkWrite(bulkOps);
+        }
 
         // Audit
         const userEmail = req.headers['x-user-email'];
-        await logAdminAction(userEmail, 'UPLOAD_CSV', { category: req.params.category });
+        await logAdminAction(userEmail, 'UPLOAD_CSV', { category: dbCategory, count: bulkOps.length });
 
-        res.json({ message: 'CSV uploaded and inventory synced successfully.' });
+        res.json({ message: `Successfully imported ${bulkOps.length} products to database.` });
     } catch (err) {
         console.error('Upload CSV Error:', err);
+        // Clean up temp file on error
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({ message: err.message });
     }
 });

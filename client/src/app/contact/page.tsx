@@ -43,18 +43,28 @@ export default function ContactPage() {
                     </div>
                 </div>
 
-                {/* Optional Map or Contact Form Placeholder */}
-                <div className="bg-gray-100 rounded-lg p-8 flex items-center justify-center">
-                    <div className="text-center">
-                        <i className="fas fa-map-marked-alt text-6xl text-gray-300 mb-4"></i>
-                        <p className="text-gray-500">Visit us at our store in Lalbagh, Lucknow.</p>
+                {/* Google Maps Embed */}
+                <div className="rounded-lg overflow-hidden shadow-lg">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d222.48288378591448!2d80.94128574116215!3d26.848661428112592!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfda7c321361d%3A0x78b91ac21523ac7!2sJPS%20Enterprises!5e0!3m2!1sen!2sin!4v1767074232543!5m2!1sen!2sin"
+                        width="100%"
+                        height="400"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="JPS Enterprises Store Location"
+                    ></iframe>
+                    <div className="bg-gray-900 text-white p-4">
+                        <p className="font-bold">JPS Enterprises</p>
+                        <p className="text-gray-400 text-sm">Shop 7 & 11, Shree Chambers, Lalbagh, Lucknow</p>
                         <a
                             href="https://www.google.com/maps/place/JPS+Enterprises/@26.8487471,80.9386101,17z"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block mt-4 text-brand-red font-bold hover:underline"
+                            className="inline-block mt-2 text-brand-red font-bold text-sm hover:underline"
                         >
-                            Get Directions &rarr;
+                            <i className="fas fa-directions mr-1"></i> Get Directions
                         </a>
                     </div>
                 </div>

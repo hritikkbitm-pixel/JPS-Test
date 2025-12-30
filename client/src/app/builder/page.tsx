@@ -80,6 +80,7 @@ export default function PCBuilder() {
         if (p.category === 'gpu') {
             adaptedSpecs.length_mm = Number(specs.length) || 300;
             adaptedSpecs.tdp = Number(specs.tdp) || 0;
+            adaptedSpecs.recommended_psu_wattage = Number(specs.recommended_psu_wattage || specs.recommended_psu) || 0;
         }
 
         // 5. PSU: Wattage
@@ -229,6 +230,9 @@ export default function PCBuilder() {
                     <div className="bg-gray-100 p-3 rounded text-center">
                         <div className="text-xs text-gray-500 font-bold uppercase">Est. Wattage</div>
                         <div className="text-xl font-black text-gray-800">{health.estimatedWattage}W</div>
+                        <div className="text-[10px] text-gray-400 mt-1 pb-1 border-t border-gray-200 pt-1">
+                            Rec. {health.recommendedWattage}W
+                        </div>
                     </div>
                     <div className="bg-gray-100 p-3 rounded text-center">
                         <div className="text-xs text-gray-500 font-bold uppercase">Total Price</div>

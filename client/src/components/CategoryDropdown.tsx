@@ -72,25 +72,67 @@ export default function CategoryDropdown() {
                 groups.push({ title: 'By Brand', items: brandItems });
             }
 
-            // Group by series
-            const seriesMap = new Map<string, number>();
-            catProducts.forEach(p => {
-                const specs = p.specs as Record<string, string> | undefined;
-                const series = specs?.series || (p as any).series;
-                if (series) {
-                    seriesMap.set(series, (seriesMap.get(series) || 0) + 1);
-                }
-            });
+            // Special handling for GPU: Group series by chipset (NVIDIA vs AMD)
+            if (cat.id === 'gpu') {
+                const nvidiaSeriesMap = new Map<string, number>();
+                const amdSeriesMap = new Map<string, number>();
 
-            if (seriesMap.size > 0) {
-                const seriesItems = Array.from(seriesMap.entries())
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 8)
-                    .map(([series]) => ({
-                        label: series,
-                        filter: `series=${series}`
-                    }));
-                groups.push({ title: 'By Series', items: seriesItems });
+                catProducts.forEach(p => {
+                    const specs = p.specs as Record<string, string> | undefined;
+                    const series = specs?.series || (p as any).series;
+                    const chipset = specs?.chipset || (p as any).chipset || '';
+
+                    if (series) {
+                        if (chipset.toUpperCase().includes('NVIDIA')) {
+                            nvidiaSeriesMap.set(series, (nvidiaSeriesMap.get(series) || 0) + 1);
+                        } else if (chipset.toUpperCase().includes('AMD')) {
+                            amdSeriesMap.set(series, (amdSeriesMap.get(series) || 0) + 1);
+                        }
+                    }
+                });
+
+                // Add NVIDIA series group
+                if (nvidiaSeriesMap.size > 0) {
+                    const nvidiaItems = Array.from(nvidiaSeriesMap.entries())
+                        .sort((a, b) => a[0].localeCompare(b[0])) // Sort alphabetically
+                        .map(([series]) => ({
+                            label: series,
+                            filter: `series=${encodeURIComponent(series)}`
+                        }));
+                    groups.push({ title: 'NVIDIA Series', items: nvidiaItems });
+                }
+
+                // Add AMD series group
+                if (amdSeriesMap.size > 0) {
+                    const amdItems = Array.from(amdSeriesMap.entries())
+                        .sort((a, b) => a[0].localeCompare(b[0])) // Sort alphabetically
+                        .map(([series]) => ({
+                            label: series,
+                            filter: `series=${encodeURIComponent(series)}`
+                        }));
+                    groups.push({ title: 'AMD Series', items: amdItems });
+                }
+            } else {
+                // For non-GPU categories, use the original series grouping
+                const seriesMap = new Map<string, number>();
+                catProducts.forEach(p => {
+                    const specs = p.specs as Record<string, string> | undefined;
+                    const series = specs?.series || (p as any).series;
+                    if (series) {
+                        seriesMap.set(series, (seriesMap.get(series) || 0) + 1);
+                    }
+                });
+
+                if (seriesMap.size > 0) {
+                    const seriesItems = Array.from(seriesMap.entries())
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 8)
+                        .map(([series]) => ({
+                            label: series,
+                            filter: `series=${series}`
+                        }));
+                    groups.push({ title: 'By Series', items: seriesItems });
+                }
             }
 
             result[cat.id] = groups;
@@ -133,7 +175,10 @@ export default function CategoryDropdown() {
                                 {/* Mega Menu Flyout */}
                                 {activeCategory === category.id && subcategories[category.id]?.length > 0 && (
                                     <div
-                                        className="absolute left-full top-0 bg-white shadow-xl border-l border-gray-100 min-w-[500px] p-6 grid grid-cols-2 gap-6"
+                                        className={`absolute left-full top-0 bg-white shadow-xl border-l border-gray-100 p-6 grid gap-6 ${category.id === 'gpu' && subcategories[category.id].length >= 3
+                                                ? 'min-w-[650px] grid-cols-3'
+                                                : 'min-w-[500px] grid-cols-2'
+                                            }`}
                                         onMouseEnter={() => handleCategoryHover(category.id)}
                                     >
                                         {subcategories[category.id].map((group, idx) => (
@@ -157,7 +202,10 @@ export default function CategoryDropdown() {
                                         ))}
 
                                         {/* View All Link */}
-                                        <div className="col-span-2 pt-4 border-t border-gray-100">
+                                        <div className={`pt-4 border-t border-gray-100 ${category.id === 'gpu' && subcategories[category.id].length >= 3
+                                                ? 'col-span-3'
+                                                : 'col-span-2'
+                                            }`}>
                                             <Link
                                                 href={`/?category=${category.id}`}
                                                 className="text-sm font-bold text-brand-red hover:underline flex items-center gap-2"

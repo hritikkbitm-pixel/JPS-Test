@@ -36,6 +36,7 @@ export interface GPU extends BasePart {
     category: 'gpu';
     length_mm: number;
     tdp: number;
+    recommended_psu_wattage?: number;
     slot_width: number;
 }
 

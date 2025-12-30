@@ -4,8 +4,10 @@
   "description": "JPS Enterprise E-commerce Store",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server/index.js",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client"
   },
   "keywords": [],
   "author": "",

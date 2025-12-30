@@ -27,6 +27,9 @@ function HomeContent() {
   const router = useRouter();
 
   const categoryFromUrl = searchParams.get('category') || 'all';
+  const seriesFromUrl = searchParams.get('series') || '';
+  const brandFromUrl = searchParams.get('brand') || '';
+  const productIdsFromUrl = searchParams.get('productIds') || '';
   const [activeSeason, setActiveSeason] = useState<ActiveSeason | null>(null);
 
   // Fetch active season
@@ -50,17 +53,26 @@ function HomeContent() {
   const [displayProducts, setDisplayProducts] = useState<Product[]>([]);
   const [sortOption, setSortOption] = useState('default');
 
-  // Initial load of products based on category
+  // Pagination state - must be declared before any conditional returns
+  const ITEMS_PER_PAGE = 16;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Initial load of products based on category or productIds filter
   useEffect(() => {
-    let initialProducts;
-    if (categoryFromUrl === 'all') {
+    let initialProducts: Product[];
+
+    // If productIds is specified (from banner click), filter by those IDs
+    if (productIdsFromUrl) {
+      const ids = productIdsFromUrl.split(',');
+      initialProducts = products.filter(p => ids.includes(p.id || ''));
+    } else if (categoryFromUrl === 'all') {
       initialProducts = products;
     } else {
       initialProducts = products.filter(p => p.category === categoryFromUrl);
     }
     setCatalogProducts(initialProducts);
     setDisplayProducts(initialProducts); // Initialize displayProducts as well
-  }, [products, categoryFromUrl]);
+  }, [products, categoryFromUrl, productIdsFromUrl]);
 
   // Handle sort
   useEffect(() => {
@@ -79,6 +91,11 @@ function HomeContent() {
     setDisplayProducts(sorted);
   }, [sortOption]); // Removed displayProducts from dependency to avoid loop, logic handled in filter callback
 
+  // Reset page when category or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFromUrl, displayProducts.length]);
+
   const handleCategorySelect = (category: string) => {
     router.push(`/?category=${category}`);
   };
@@ -96,8 +113,13 @@ function HomeContent() {
     setDisplayProducts(sorted);
   }, [sortOption]);
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // LANDING PAGE VIEW
-  if (categoryFromUrl === 'all') {
+  if (categoryFromUrl === 'all' && !productIdsFromUrl) {
     // Filter banners by type
     const heroBanners = banners.filter(b => b.type === 'hero');
     const promoBanners = banners.filter(b => b.type === 'promo' || b.type === 'product-grid');
@@ -137,16 +159,23 @@ function HomeContent() {
   }
 
   // CATALOG PAGE VIEW
+  // Computed pagination values
+  const totalPages = Math.ceil(displayProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = displayProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   return (
     <div className="animate-fade-in" key={categoryFromUrl}>
       {/* Breadcrumb */}
       <div className="text-xs text-gray-500 mb-4 flex items-center gap-2">
         <Link href="/" className="hover:text-brand-red"><i className="fas fa-home"></i></Link>
         <span>/</span>
-        <span className="font-bold text-gray-700 uppercase">{categoryFromUrl}</span>
+        <span className="font-bold text-gray-700 uppercase">{productIdsFromUrl ? 'Featured Collection' : categoryFromUrl}</span>
       </div>
 
-      <h1 className="text-3xl font-bold uppercase mb-6 border-b pb-2">{categoryFromUrl === 'gpu' ? 'Graphics Card' : categoryFromUrl === 'psu' ? 'Power Supply' : categoryFromUrl === 'case' ? 'Cabinet' : categoryFromUrl}</h1>
+      <h1 className="text-3xl font-bold uppercase mb-6 border-b pb-2">
+        {productIdsFromUrl ? 'Featured Collection' : categoryFromUrl === 'gpu' ? 'Graphics Card' : categoryFromUrl === 'psu' ? 'Power Supply' : categoryFromUrl === 'case' ? 'Cabinet' : categoryFromUrl}
+      </h1>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar */}
@@ -155,6 +184,8 @@ function HomeContent() {
             products={catalogProducts}
             onFilterChange={handleFilterChange}
             category={categoryFromUrl}
+            initialSeries={seriesFromUrl}
+            initialBrand={brandFromUrl}
           />
         </div>
 
@@ -163,7 +194,7 @@ function HomeContent() {
           {/* Toolbar */}
           <div className="bg-gray-100 p-3 rounded mb-6 flex justify-between items-center border border-gray-200">
             <div className="text-sm text-gray-600">
-              Showing <span className="font-bold">{displayProducts.length}</span> products
+              Showing <span className="font-bold">{startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, displayProducts.length)}</span> of <span className="font-bold">{displayProducts.length}</span> products
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase text-gray-500">Sort By:</span>
@@ -181,25 +212,58 @@ function HomeContent() {
           </div>
 
           {/* Grid */}
-          {displayProducts.length === 0 ? (
+          {paginatedProducts.length === 0 ? (
             <div className="text-center py-20 bg-gray-50 rounded border border-dashed border-gray-300 text-gray-500">
               <i className="fas fa-search text-4xl mb-4 text-gray-300"></i>
               <p>No products match your filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayProducts.map((product) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {paginatedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
 
-          {/* Pagination (Mock) */}
-          {displayProducts.length > 0 && (
-            <div className="mt-10 flex justify-center gap-2">
-              <button className="w-8 h-8 flex items-center justify-center bg-brand-red text-white rounded text-sm font-bold">1</button>
-              <button className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded text-sm font-bold hover:bg-gray-300">2</button>
-              <button className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded text-sm font-bold hover:bg-gray-300"><i className="fas fa-angle-right"></i></button>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-10 flex justify-center items-center gap-2">
+              {/* Previous Button */}
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`w-10 h-10 flex items-center justify-center rounded text-sm font-bold transition ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+              >
+                <i className="fas fa-angle-left"></i>
+              </button>
+
+              {/* Page Numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                // Show first page, last page, current page, and pages around current
+                if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`w-10 h-10 flex items-center justify-center rounded text-sm font-bold transition ${page === currentPage ? 'bg-brand-red text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                    >
+                      {page}
+                    </button>
+                  );
+                } else if (page === currentPage - 2 || page === currentPage + 2) {
+                  return <span key={page} className="text-gray-400">...</span>;
+                }
+                return null;
+              })}
+
+              {/* Next Button */}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`w-10 h-10 flex items-center justify-center rounded text-sm font-bold transition ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+              >
+                <i className="fas fa-angle-right"></i>
+              </button>
             </div>
           )}
         </div>

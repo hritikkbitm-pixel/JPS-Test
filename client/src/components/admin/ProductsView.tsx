@@ -26,12 +26,13 @@ export default function ProductsView() {
         }
     }, [categories, selectedCategory]);
 
-    // Fetch products for selected category
+    // Fetch products for selected category from MongoDB (same as storefront)
     useEffect(() => {
         const fetchCategoryProducts = async () => {
             setIsLoading(true);
             try {
-                const res = await axios.get(`${API_URL}/products/cat/${selectedCategory}`, {
+                // Use the same endpoint as storefront - reads from MongoDB
+                const res = await axios.get(`${API_URL}/products?category=${selectedCategory}`, {
                     headers: { 'x-user-email': 'admin@jps.com' }
                 });
                 setProducts(res.data);

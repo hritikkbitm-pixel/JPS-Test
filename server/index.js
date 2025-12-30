@@ -37,7 +37,7 @@ mongoose.connect(MONGO_URI)
         console.log('MongoDB connected');
         lastDbError = null;
         // Sync inventory on startup
-        syncInventory();
+        // syncInventory(); // Disabled to use MongoDB as source of truth
     })
     .catch(err => {
         console.error('MongoDB connection error:', err);
@@ -71,6 +71,7 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/seasons', require('./routes/seasons'));
 app.use('/api/campaigns', require('./routes/campaigns'));
 app.use('/api/offer-tiles', require('./routes/offer-tiles'));
+app.use('/api/siteinfo', require('./routes/siteinfo'));
 
 app.get('/api', (req, res) => {
     res.json({ message: 'JPS API is operational', version: '1.0' });

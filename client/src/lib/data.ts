@@ -13,6 +13,7 @@ export interface ProductSpecs {
     length?: number;
     length_mm?: number; // Added
     recommended_psu?: number;
+    recommended_psu_wattage?: number; // Added
     power_watts?: number;
     max_gpu_len?: number;
     max_gpu_length_mm?: number; // Added

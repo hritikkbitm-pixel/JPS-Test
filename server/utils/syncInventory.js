@@ -88,16 +88,10 @@ const syncInventory = async () => {
             totalUpdated += bulkOps.length;
         }
 
-        // Cleanup: Remove products in this category that are NOT in the CSV
-        if (syncedIds.length > 0) {
-            const deleteResult = await Product.deleteMany({
-                category: dbCategory,
-                id: { $nin: syncedIds }
-            });
-            console.log(`✅ Synced ${file}: ${syncedIds.length} items (${deleteResult.deletedCount} removed).`);
-        } else {
-            console.warn(`⚠️ No valid IDs found in ${file}. Skipping database cleanup for ${dbCategory}.`);
-        }
+        // NOTE: We intentionally do NOT delete products that are missing from CSV.
+        // MongoDB is the source of truth. CSVs are only for bulk import.
+        // This prevents data loss on Render where uploaded files are ephemeral.
+        console.log(`✅ Synced ${file}: ${syncedIds.length} items upserted to database.`);
     }
 
     console.log(`🎉 Inventory Sync Complete. Processed ${totalUpdated} items.`);

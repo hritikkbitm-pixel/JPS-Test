@@ -9,6 +9,7 @@ import CategoriesView from '@/components/admin/CategoriesView';
 import SeasonsView from '@/components/admin/SeasonsView';
 import CampaignsView from '@/components/admin/CampaignsView';
 import OfferTilesView from '@/components/admin/OfferTilesView';
+import InformationView from '@/components/admin/InformationView';
 
 export default function AdminPage() {
     const [view, setView] = useState('dashboard');
@@ -35,6 +36,9 @@ export default function AdminPage() {
                     </button>
                     <button onClick={() => setView('categories')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'categories' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
                         <i className="fas fa-th-large w-5 text-center"></i> Categories
+                    </button>
+                    <button onClick={() => setView('information')} className={`w-full text-left p-3 rounded transition flex items-center gap-3 ${view === 'information' ? 'bg-brand-red text-white shadow-md' : 'hover:bg-gray-900 text-gray-400'}`}>
+                        <i className="fas fa-info-circle w-5 text-center"></i> Information
                     </button>
 
                     <div className="border-t border-gray-800 my-4 pt-4">
@@ -66,6 +70,7 @@ export default function AdminPage() {
                 {view === 'products' && <ProductsView />}
                 {view === 'marketing' && <MarketingView />}
                 {view === 'categories' && <CategoriesView />}
+                {view === 'information' && <InformationView />}
                 {view === 'seasons' && <SeasonsView />}
                 {view === 'campaigns' && <CampaignsView />}
                 {view === 'tiles' && <OfferTilesView />}
@@ -73,4 +78,3 @@ export default function AdminPage() {
         </div>
     );
 }
-

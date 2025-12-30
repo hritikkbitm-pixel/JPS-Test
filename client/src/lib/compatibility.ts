@@ -16,6 +16,7 @@ export interface CompatibilityResult {
     errors: string[];
     warnings: string[];
     estimatedWattage: number;
+    recommendedWattage: number;
 }
 
 export function checkBuildHealth(parts: BuildState): CompatibilityResult {
@@ -95,6 +96,8 @@ export function checkBuildHealth(parts: BuildState): CompatibilityResult {
         const recommended = Math.ceil(estimatedWattage * 1.5);
         if (parts.psu.wattage < estimatedWattage) {
             errors.push(`Insufficient Power: Estimated usage (${estimatedWattage}W) exceeds PSU wattage (${parts.psu.wattage}W).`);
+        } else if (parts.gpu && parts.gpu.recommended_psu_wattage && parts.psu.wattage < parts.gpu.recommended_psu_wattage) {
+            warnings.push(`Manufacturer Recommendation: GPU recommends ${parts.gpu.recommended_psu_wattage}W PSU (Selected: ${parts.psu.wattage}W).`);
         } else if (parts.psu.wattage < recommended) {
             warnings.push(`Low Power Headroom: Recommended PSU is ${recommended}W for safe operation (Current: ${parts.psu.wattage}W).`);
         }
@@ -104,6 +107,7 @@ export function checkBuildHealth(parts: BuildState): CompatibilityResult {
         valid: errors.length === 0,
         errors,
         warnings,
-        estimatedWattage
+        estimatedWattage,
+        recommendedWattage: Math.max(Math.ceil(estimatedWattage * 1.5), parts.gpu?.recommended_psu_wattage || 0)
     };
 }

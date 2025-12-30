@@ -5,6 +5,8 @@ import Providers from "../components/Providers";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CartDrawer from "../components/CartDrawer";
+import AnimatedBanner from "../components/AnimatedBanner";
+import DisclaimerPopup from "../components/DisclaimerPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,11 +62,13 @@ export default function RootLayout({
       >
         <Providers>
           <Header />
+          <AnimatedBanner />
           <main id="app-root" className="flex-grow container mx-auto px-4 py-8 min-h-[600px]">
             {children}
           </main>
           <CartDrawer />
           <Footer />
+          <DisclaimerPopup />
           <div id="toast-container" className="fixed bottom-4 right-4 z-[150] flex flex-col gap-2 pointer-events-none"></div>
         </Providers>
       </body>
