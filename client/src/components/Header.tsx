@@ -125,12 +125,21 @@ export default function Header() {
                             <div className="h-8 w-px bg-gray-300 mx-2 hidden md:block"></div>
 
                             <Link href="/builder"
-                                className="hidden md:flex flex-col items-center group transition" title="PC Configurator">
+                                className="flex flex-col items-center group transition" title="PC Configurator">
                                 <div
                                     className="bg-gray-100 group-hover:bg-brand-red group-hover:text-white w-10 h-10 rounded-full flex items-center justify-center transition duration-300 mb-1">
                                     <i className="fas fa-tools text-sm"></i>
                                 </div>
                                 <span className="text-[10px] font-bold uppercase">Builder</span>
+                            </Link>
+
+                            {/* Hot News Icon */}
+                            <Link href="/news" className="flex flex-col items-center group transition relative">
+                                <div className="bg-orange-100 group-hover:bg-orange-500 group-hover:text-white w-10 h-10 rounded-full flex items-center justify-center transition duration-300 mb-1 relative">
+                                    <i className="fas fa-fire text-orange-500 group-hover:text-white text-sm animate-pulse"></i>
+                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-400 rounded-full animate-ping"></span>
+                                </div>
+                                <span className="text-[10px] font-bold uppercase">News</span>
                             </Link>
 
                             <button onClick={toggleCart}
@@ -181,20 +190,36 @@ export default function Header() {
             {isMobileMenuOpen && (
                 <div className="md:hidden bg-white border-t shadow-lg">
                     <div className="flex flex-col text-sm font-semibold text-gray-700">
-                        <Link href="/?category=all" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>All Products</Link>
-                        <Link href="/builder" className="p-4 border-b text-brand-red bg-red-50" onClick={() => setIsMobileMenuOpen(false)}>PC System Builder</Link>
-                        {categories.slice(0, 5).map((cat: any) => (
+                        <Link href="/" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>
+                            <i className="fas fa-home mr-2"></i>Home
+                        </Link>
+                        <Link href="/news" className="p-4 border-b hover:bg-gray-50 flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
+                            <span className="relative mr-2">
+                                <i className="fas fa-fire text-orange-500 animate-pulse"></i>
+                            </span>
+                            Hot News
+                        </Link>
+                        <Link href="/builder" className="p-4 border-b text-brand-red bg-red-50" onClick={() => setIsMobileMenuOpen(false)}>
+                            <i className="fas fa-tools mr-2"></i>PC System Builder
+                        </Link>
+                        <Link href="/?category=all" className="p-4 border-b hover:bg-gray-50" onClick={() => setIsMobileMenuOpen(false)}>
+                            <i className="fas fa-bolt mr-2 text-brand-red"></i>New Arrivals
+                        </Link>
+                        <div className="p-3 bg-gray-100 text-xs font-bold uppercase text-gray-500">Categories</div>
+                        {categories.slice(0, 8).map((cat: any) => (
                             <Link
                                 key={cat.id}
                                 href={`/?category=${cat.id}`}
-                                className="p-4 border-b hover:bg-gray-50"
+                                className="p-4 border-b hover:bg-gray-50 pl-6"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 {cat.label}
                             </Link>
                         ))}
                         {!isLoading && user && checkIsAdmin(user) && (
-                            <Link href="/admin" className="p-4 border-b hover:bg-gray-50 text-brand-red" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</Link>
+                            <Link href="/admin" className="p-4 border-b bg-gray-800 text-white" onClick={() => setIsMobileMenuOpen(false)}>
+                                <i className="fas fa-user-shield mr-2"></i>Admin Panel
+                            </Link>
                         )}
                     </div>
                 </div>
