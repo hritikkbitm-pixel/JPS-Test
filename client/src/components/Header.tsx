@@ -163,6 +163,15 @@ export default function Header() {
                     <ul className="flex gap-8 text-[13px] font-bold uppercase tracking-wide text-gray-800 py-3 flex-1">
                         <li><button onClick={() => window.location.href = '/'} className="nav-item hover:text-brand-red transition">Home</button></li>
                         <li><button onClick={() => window.location.href = '/builder'} className="nav-item hover:text-brand-red transition">PC Builder</button></li>
+                        <li>
+                            <button onClick={() => window.location.href = '/news'} className="nav-item hover:text-brand-red transition flex items-center gap-1.5">
+                                <span className="relative">
+                                    <i className="fas fa-fire text-orange-500 animate-pulse"></i>
+                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full animate-ping"></span>
+                                </span>
+                                Hot News
+                            </button>
+                        </li>
                         <li className="ml-auto"><button onClick={() => window.location.href = '/?category=all'} className="text-brand-red hover:underline flex items-center"><i className="fas fa-bolt mr-1"></i>New Arrivals</button></li>
                     </ul>
                 </div>
