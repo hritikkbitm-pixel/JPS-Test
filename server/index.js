@@ -21,10 +21,38 @@ console.log('-------------------------');
 
 // Middleware
 const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 app.use(compression());
+app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for now (may conflict with inline scripts)
+    crossOriginEmbedderPolicy: false
+}));
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Rate Limiting - Protect against DDoS
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // 200 requests per IP per 15 min
+    message: { error: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Apply stricter limit to auth routes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20, // Only 20 auth attempts per 15 min
+    message: { error: 'Too many login attempts, please try again later.' }
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/auth/', authLimiter);
+
+console.log('🛡️ Security: Helmet & Rate Limiting enabled');
 
 // Database Connection
 const syncInventory = require('./utils/syncInventory');

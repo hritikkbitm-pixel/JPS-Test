@@ -51,7 +51,7 @@ export default function HeroCarousel({ banners }: HeroCarouselProps) {
                             <img
                                 src={b.image || "https://via.placeholder.com/1500x500?text=No+Banner"}
                                 className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
-                                alt="Banner"
+                                alt={`JPS Enterprises promotional banner ${i + 1}`}
                             />
                         </Link>
                     ))}
