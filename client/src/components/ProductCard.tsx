@@ -23,7 +23,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     return (
         <div
-            className={`bg-white border border-gray-100 rounded-lg product-card flex flex-col relative group overflow-hidden ${!isAvailable ? 'opacity-75 grayscale' : ''}`}
+            className={`bg-white border border-gray-100 rounded-lg product-card flex flex-col relative group overflow-hidden`}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
         >
@@ -36,12 +36,20 @@ export default function ProductCard({ product }: ProductCardProps) {
             )}
             <Link href={`/product/${product.id}`} className="block">
                 <div className="h-48 p-6 flex items-center justify-center relative cursor-pointer">
-                    <img src={product.image || "/placeholder.svg"} className="max-h-full max-w-full object-contain transition duration-300 group-hover:scale-110" alt={product.name} />
+                    <img
+                        src={product.image || "/placeholder.svg"}
+                        className={`max-h-full max-w-full object-contain transition duration-300 group-hover:scale-110 ${!isAvailable ? 'grayscale' : ''}`}
+                        alt={product.name}
+                    />
                     {product.stock !== undefined && product.stock < 5 && isAvailable && !hasDiscount && (
                         <span className="absolute top-2 left-2 text-red-600 text-[10px] font-bold uppercase animate-pulse">Low Stock</span>
                     )}
                     {!isAvailable && (
-                        <span className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-10 text-brand-red font-black text-xl uppercase -rotate-12 border-4 border-brand-red">Unavailable</span>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <span className="bg-gray-900 text-white font-black text-sm uppercase px-4 py-2 rounded-sm tracking-wider shadow-lg">
+                                Out of Stock
+                            </span>
+                        </div>
                     )}
                 </div>
             </Link>

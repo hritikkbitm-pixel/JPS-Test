@@ -273,8 +273,8 @@ router.post('/cat/:category/csv', checkAuth, upload.single('file'), async (req, 
                 stock: (row.stock_status || row['"stock_status"']) === 'In Stock' && !Number(row.stock || row['"stock"']) ? 10 : Number(row.stock || row['"stock"'] || 0),
                 price: Number((row.price || row['"price"'])?.toString().replace(/[^0-9.]/g, '') || 0),
                 mrp: Number((row.mrp || row['"mrp"'])?.toString().replace(/[^0-9.]/g, '') || 0) || undefined,
-                name: row.name || row['"name"'] || row.full_name || row['"full_name"'] || id,
-                image: row.image || row['"image"'] || row.image_url || row['"image_url"'] || '',
+                name: row.name || row['"name"'] || row.full_name || row['"full_name"'] || row.product_name || row['"product_name"'] || id,
+                image: row.image || row['"image"'] || row.image_url || row['"image_url"'] || row.product_image || row['"product_image"'] || '',
             };
 
             // Populate specs from remaining fields
