@@ -217,6 +217,133 @@ router.get('/cat/:category/csv', checkAuth, async (req, res) => {
     res.download(csvPath, filename);
 });
 
+// Transform Lenovo vendor CSV row to Product schema
+const transformLenovoRow = (row) => {
+    // Helper to get value (handles quoted keys from csv-parser)
+    const get = (key) => row[key] || row[`"${key}"`] || '';
+
+    // Helper to get first non-empty value from multiple possible keys
+    const getFirst = (...keys) => {
+        for (const key of keys) {
+            const val = get(key);
+            if (val) return val;
+        }
+        return '';
+    };
+
+    const series = get('Series');
+    const mtm = get('MTM');
+
+    // Price can be in different columns depending on CSV format
+    const priceStr = getFirst('Adjusted_Final_Price', 'final-price', 'Original_Final_Price', 'Final_Price');
+    const price = Number(priceStr?.toString().replace(/[^0-9.]/g, '') || 0);
+
+    return {
+        id: get('id') || `lenovo_${mtm.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+        name: `Lenovo ${series} ${mtm}`.trim(),
+        brand: 'Lenovo',
+        category: 'laptop',
+        price: price,
+        image: getFirst('image', 'image-src', 'image_src'),
+        stock: 10,
+        available: true,
+        sold: 0,
+        specs: {
+            series: series,
+            mtm: mtm,
+            form_factor: get('Form Factor'),
+            cpu: get('CPU'),
+            ai_pc: get('AI PC'),
+            ram_storage: get('RAM/HDD'),
+            os: get('Operating System'),
+            office: get('Office'),
+            gpu: get('Graphics'),
+            display: get('Display'),
+            color: get('Color'),
+            weight: get('Weight'),
+            carrycase: get('Carrycase MTM'),
+            warranty: get('Warranty'),
+            warranty_addon: get('Additional Warranty Offering'),
+            adp: get('ADP Additional'),
+            keyboard: get('Keyboard'),
+            login_option: get('Login Option'),
+            segment: get('Segment Type'),
+        }
+    };
+};
+
+// Upload Lenovo Vendor CSV - special schema mapping
+// Add ?clear=true query param to delete existing Lenovo laptops before import
+router.post('/cat/laptops/lenovo/csv', checkAuth, upload.single('file'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    try {
+        // Check if clear option is requested
+        const clearExisting = req.query.clear === 'true';
+        let deletedCount = 0;
+
+        if (clearExisting) {
+            // Delete all existing Lenovo laptops
+            const deleteResult = await Product.deleteMany({
+                brand: 'Lenovo',
+                category: 'laptop'
+            });
+            deletedCount = deleteResult.deletedCount || 0;
+            console.log(`🗑️ Cleared ${deletedCount} existing Lenovo laptops`);
+        }
+
+        // Parse CSV
+        const results = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on('data', (data) => results.push(data))
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        // Clean up temp file
+        fs.unlinkSync(req.file.path);
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or invalid' });
+        }
+
+        // Transform and upsert to MongoDB
+        const bulkOps = [];
+        for (const row of results) {
+            const product = transformLenovoRow(row);
+            if (!product.id) continue;
+
+            bulkOps.push({
+                updateOne: {
+                    filter: { id: product.id },
+                    update: { $set: product },
+                    upsert: true
+                }
+            });
+        }
+
+        if (bulkOps.length > 0) {
+            await Product.bulkWrite(bulkOps);
+        }
+
+        // Audit
+        const userEmail = req.headers['x-user-email'];
+        await logAdminAction(userEmail, 'UPLOAD_LENOVO_CSV', { count: bulkOps.length });
+
+        res.json({ message: `Successfully imported ${bulkOps.length} Lenovo laptops to database.` });
+    } catch (err) {
+        console.error('Upload Lenovo CSV Error:', err);
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Upload Category CSV - writes directly to MongoDB (not file system)
 router.post('/cat/:category/csv', checkAuth, upload.single('file'), async (req, res) => {
     const category = req.params.category.toLowerCase();

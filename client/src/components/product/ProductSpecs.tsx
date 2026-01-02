@@ -24,13 +24,13 @@ export default function ProductSpecs({ product }: ProductSpecsProps) {
             <h2 className="text-xl font-black uppercase text-gray-800 mb-6 flex items-center gap-2">
                 <i className="fas fa-list-ul text-brand-red"></i> Specifications
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {validSpecs.map(([key, value], idx) => (
-                    <div key={idx} className="flex justify-between items-center border-b border-gray-50 pb-2">
-                        <span className="text-xs font-bold uppercase text-gray-500 tracking-wide">
+                    <div key={idx} className="border-b border-gray-50 pb-2">
+                        <span className="text-xs font-bold uppercase text-gray-400 tracking-wide block mb-1">
                             {key.replace(/_/g, ' ')}
                         </span>
-                        <span className="text-sm font-semibold text-gray-800 text-right">
+                        <span className="text-sm font-semibold text-gray-800 break-words">
                             {String(value)}
                         </span>
                     </div>

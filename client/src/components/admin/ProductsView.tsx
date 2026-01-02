@@ -184,10 +184,11 @@ export default function ProductsView() {
                                 }}
                             />
                         </label>
+                        {/* Lenovo-specific upload - only for laptops */}
                     </div>
                 </div>
                 <button onClick={handleAddProduct} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold text-sm uppercase tracking-wider transition shadow-sm whitespace-nowrap">
-                    <i className="fas fa-plus mr-2"></i> Add Item
+                    <i className="fas fa-plus mr-2"></i>Add Item
                 </button>
             </div>
 
@@ -202,6 +203,64 @@ export default function ProductsView() {
                     </button>
                 ))}
             </div>
+
+            {/* Lenovo Vendor CSV Upload - only visible for laptops */}
+            {(selectedCategory === 'laptop' || selectedCategory === 'laptops') && (
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                            <i className="fas fa-laptop text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-blue-900 text-sm">Lenovo Vendor Import</h4>
+                            <p className="text-blue-700 text-xs">Upload vendor CSV with special schema (Series, MTM, final-price, etc.)</p>
+                        </div>
+                    </div>
+                    <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition flex items-center gap-2 cursor-pointer shadow-md whitespace-nowrap">
+                        <i className="fas fa-upload"></i> Upload Lenovo CSV
+                        <input
+                            type="file"
+                            accept=".csv"
+                            className="hidden"
+                            onChange={async (e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    const file = e.target.files[0];
+
+                                    // Ask if user wants to clear existing Lenovo products
+                                    const clearExisting = confirm(
+                                        `🗑️ Clear existing Lenovo laptops before import?\n\n` +
+                                        `Click OK to DELETE all existing Lenovo laptops and import fresh.\n` +
+                                        `Click Cancel to ADD/UPDATE without deleting existing products.`
+                                    );
+
+                                    if (!confirm(`Upload Lenovo vendor CSV: ${file.name}?`)) return;
+
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    try {
+                                        setIsLoading(true);
+                                        const url = clearExisting
+                                            ? `${API_URL}/products/cat/laptops/lenovo/csv?clear=true`
+                                            : `${API_URL}/products/cat/laptops/lenovo/csv`;
+                                        const res = await axios.post(url, formData, {
+                                            headers: {
+                                                'x-user-email': 'admin@jps.com',
+                                                'Content-Type': 'multipart/form-data'
+                                            }
+                                        });
+                                        alert(res.data.message || 'Lenovo CSV Uploaded Successfully!');
+                                        window.location.reload();
+                                    } catch (err: any) {
+                                        console.error(err);
+                                        alert(err.response?.data?.message || 'Failed to upload Lenovo CSV.');
+                                        setIsLoading(false);
+                                    }
+                                }
+                            }}
+                        />
+                    </label>
+                </div>
+            )}
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
