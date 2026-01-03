@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback } from 'react';
+import Image from 'next/image';
 import { useCart } from '../context/CartContext';
 import { Product } from '@/lib/data';
 import { useHoverPrefetch, prefetchProduct } from '@/hooks/usePrefetch';
@@ -35,12 +36,18 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </div>
             )}
             <Link href={`/product/${product.id}`} className="block">
-                <div className="h-48 p-6 flex items-center justify-center relative cursor-pointer">
-                    <img
-                        src={product.image || "/placeholder.svg"}
-                        className={`max-h-full max-w-full object-contain transition duration-300 group-hover:scale-110 ${!isAvailable ? 'grayscale' : ''}`}
-                        alt={product.name}
-                    />
+                <div className="h-48 p-4 flex items-center justify-center relative cursor-pointer">
+                    <div className="relative w-full h-full">
+                        <Image
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                            className={`object-contain transition duration-300 group-hover:scale-110 ${!isAvailable ? 'grayscale' : ''}`}
+                            loading="lazy"
+                            unoptimized={product.image?.includes('freepik.com')}
+                        />
+                    </div>
                     {product.stock !== undefined && product.stock < 5 && isAvailable && !hasDiscount && (
                         <span className="absolute top-2 left-2 text-red-600 text-[10px] font-bold uppercase animate-pulse">Low Stock</span>
                     )}

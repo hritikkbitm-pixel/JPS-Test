@@ -75,8 +75,22 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
 
+  // Image Optimization
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'img.freepik.com' },
+      { protocol: 'https', hostname: 'm.media-amazon.com' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: '**.cloudinary.com' },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24, // 24 hours
+  },
+
   // Disable X-Powered-By header
   poweredByHeader: false,
+
 
   // Security Headers
   async headers() {
@@ -110,7 +124,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
               "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.jpsenterprises.in https://jps-test.onrender.com https://*.onrender.com https://*.netlify.app",
+              "connect-src 'self' http://localhost:5001 https://api.razorpay.com https://lumberjack.razorpay.com https://*.jpsenterprises.in https://jps-test.onrender.com https://*.onrender.com https://*.netlify.app",
               "frame-src https://api.razorpay.com https://checkout.razorpay.com",
               "frame-ancestors 'self'"
             ].join('; ')

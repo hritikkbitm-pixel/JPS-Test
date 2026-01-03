@@ -3,15 +3,23 @@
 import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useShop } from '@/context/ShopContext';
 import ProductCard from '@/components/ProductCard';
 import HeroCarousel from '@/components/HeroCarousel';
-import CategoryGrid from '@/components/CategoryGrid';
-import SidebarFilter from '@/components/SidebarFilter';
-import FeaturedProducts from '@/components/FeaturedProducts';
-import PromoBanner from '@/components/PromoBanner';
 import { Product, Banner } from '@/lib/data';
 import { API_URL } from '@/config';
+
+// Dynamic imports for below-fold components (reduces initial JS bundle)
+const CategoryGrid = dynamic(() => import('@/components/CategoryGrid'), {
+  loading: () => <div className="h-48 bg-gray-100 animate-pulse rounded-lg" />
+});
+const SidebarFilter = dynamic(() => import('@/components/SidebarFilter'));
+const FeaturedProducts = dynamic(() => import('@/components/FeaturedProducts'), {
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
+});
+const PromoBanner = dynamic(() => import('@/components/PromoBanner'));
 
 interface ActiveSeason {
   id: string;
@@ -130,12 +138,14 @@ function HomeContent() {
         {activeSeason && activeSeason.hero_banner_image && (
           <Link href={`/season/${activeSeason.slug}`} className="block w-full mb-4">
             <div className="relative w-full aspect-[21/6] bg-gradient-to-r from-gray-100 to-gray-200 overflow-hidden group cursor-pointer">
-              <img
+              <Image
                 src={activeSeason.hero_banner_image}
                 alt={activeSeason.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                fetchPriority="high"
-                loading="eager"
+                fill
+                sizes="100vw"
+                priority
+                className="object-cover group-hover:scale-[1.01] transition-transform duration-700 ease-out"
+                unoptimized={activeSeason.hero_banner_image.includes('freepik.com')}
               />
             </div>
           </Link>

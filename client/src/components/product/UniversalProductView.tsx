@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Product } from '@/lib/data';
 import ProductHero from './ProductHero';

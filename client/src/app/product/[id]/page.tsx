@@ -1,45 +1,47 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { Star, Truck, Shield, RotateCcw, ShoppingCart, Check, Heart, ArrowLeft, Loader2 } from 'lucide-react';
+import React from 'react';
 import { API_URL } from '@/config';
-import { useParams } from 'next/navigation';
-import axios from 'axios';
 import { Product } from '@/lib/data';
 import UniversalProductView from '@/components/product/UniversalProductView';
-import Loading from '@/components/Loading';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 
-export default function ProductPage() {
-    const { id } = useParams();
-    const [product, setProduct] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+// ISR: Revalidate product pages every 5 minutes
+export const revalidate = 300;
 
-    useEffect(() => {
-        const fetchProduct = async () => {
-            if (!id) return;
-            try {
-                // Try fetching from API
-                const res = await axios.get(`${API_URL}/products/${id}`);
-                if (res.data) {
-                    setProduct(res.data);
-                } else {
-                    setError('Product not found');
-                }
-            } catch (err) {
-                console.error(err);
-                setError('Failed to load product');
-            } finally {
-                setLoading(false);
-            }
+// Generate metadata for SEO
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    try {
+        const res = await fetch(`${API_URL}/products/${id}`, { next: { revalidate: 300 } });
+        if (!res.ok) return { title: 'Product Not Found' };
+        const product: Product = await res.json();
+        return {
+            title: `${product.name} | JPS Enterprises`,
+            description: `Buy ${product.name} from ${product.brand} at best price. ${product.category} available at JPS Enterprises.`,
         };
+    } catch {
+        return { title: 'Product | JPS Enterprises' };
+    }
+}
 
-        fetchProduct();
-    }, [id]);
+// Server Component - no 'use client'
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
 
-    if (loading) return <Loading />;
-    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500 font-bold">{error}</div>;
-    if (!product) return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+    // Fetch on server with ISR caching
+    const res = await fetch(`${API_URL}/products/${id}`, {
+        next: { revalidate: 300 } // Cache for 5 minutes
+    });
+
+    if (!res.ok) {
+        notFound();
+    }
+
+    const product: Product = await res.json();
+
+    if (!product) {
+        notFound();
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">

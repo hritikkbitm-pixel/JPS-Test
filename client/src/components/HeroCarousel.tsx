@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Banner {
     image: string;
@@ -27,7 +28,18 @@ export default function HeroCarousel({ banners }: HeroCarouselProps) {
     const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % banners.length);
     const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
 
-    if (banners.length === 0) return null;
+    // Show skeleton while loading
+    if (banners.length === 0) {
+        return (
+            <div className="mb-10 w-full">
+                <div className="w-full relative h-[250px] md:h-[400px] lg:h-[500px] bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-lg overflow-hidden animate-pulse">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-gray-400 text-lg font-semibold">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Build target link - if productIds exist, link to product filter, else use target
     const getBannerLink = (b: Banner) => {
@@ -50,8 +62,11 @@ export default function HeroCarousel({ banners }: HeroCarouselProps) {
                         >
                             <img
                                 src={b.image || "https://via.placeholder.com/1500x500?text=No+Banner"}
-                                className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
                                 alt={`JPS Enterprises promotional banner ${i + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+                                fetchPriority={i === 0 ? 'high' : 'auto'}
+                                loading={i === 0 ? 'eager' : 'lazy'}
+                                referrerPolicy="no-referrer"
                             />
                         </Link>
                     ))}
@@ -79,3 +94,4 @@ export default function HeroCarousel({ banners }: HeroCarouselProps) {
         </div>
     );
 }
+

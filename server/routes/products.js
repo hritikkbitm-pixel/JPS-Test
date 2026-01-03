@@ -244,7 +244,7 @@ const transformLenovoRow = (row) => {
         brand: 'Lenovo',
         category: 'laptop',
         price: price,
-        image: getFirst('image', 'image-src', 'image_src'),
+        image: getFirst('Image', 'image', 'image-src', 'image_src'),
         stock: 10,
         available: true,
         sold: 0,
@@ -294,12 +294,12 @@ router.post('/cat/laptops/lenovo/csv', checkAuth, upload.single('file'), async (
             console.log(`🗑️ Cleared ${deletedCount} existing Lenovo laptops`);
         }
 
-        // Parse CSV
-        const results = [];
+        // Parse CSV - handle vendor files with leading blank/title rows
+        const rawResults = [];
         await new Promise((resolve, reject) => {
             fs.createReadStream(req.file.path)
-                .pipe(csv())
-                .on('data', (data) => results.push(data))
+                .pipe(csv({ headers: false })) // Read without headers first
+                .on('data', (data) => rawResults.push(data))
                 .on('end', resolve)
                 .on('error', reject);
         });
@@ -307,9 +307,49 @@ router.post('/cat/laptops/lenovo/csv', checkAuth, upload.single('file'), async (
         // Clean up temp file
         fs.unlinkSync(req.file.path);
 
-        if (results.length === 0) {
-            return res.status(400).json({ message: 'CSV file is empty or invalid' });
+        // Find actual data rows and map columns
+        // Expected columns at positions: 1:Series, 2:FormFactor, 3:MTM, 4:CPU, 5:AI_PC, 6:RAM/HDD, 
+        // 7:OS, 8:Office, 9:Graphics, 10:Display, 11:Color, 12:Weight, 13:Carrycase, 14:Warranty,
+        // 15:WarrantyAddon, 16:ADP, 17:Keyboard, 18:LoginOption, 19:Segment, 20:T3billing, 
+        // 21:Activation, 22:NLC, 23:Price, 24:Image
+        const results = [];
+        for (const row of rawResults) {
+            const vals = Object.values(row);
+            // Skip empty rows, title rows, and header rows
+            if (!vals[3] || vals[3] === 'MTM' || String(vals[3]).includes('Lenovo')) continue;
+
+            // Map by position (0-indexed, column 0 is empty)
+            const mappedRow = {
+                'Series': vals[1] || '',
+                'Form Factor': vals[2] || '',
+                'MTM': vals[3] || '',
+                'CPU': vals[4] || '',
+                'AI PC': vals[5] || '',
+                'RAM/HDD': vals[6] || '',
+                'Operating System': vals[7] || '',
+                'Office': vals[8] || '',
+                'Graphics': vals[9] || '',
+                'Display': vals[10] || '',
+                'Color': vals[11] || '',
+                'Weight': vals[12] || '',
+                'Carrycase MTM': vals[13] || '',
+                'Warranty': vals[14] || '',
+                'Additional Warranty Offering': vals[15] || '',
+                'ADP Additional': vals[16] || '',
+                'Keyboard': vals[17] || '',
+                'Login Option': vals[18] || '',
+                'Segment Type': vals[19] || '',
+                'Adjusted_Final_Price': vals[23] || vals[20] || '', // Try col 23 first, then 20
+                'Image': vals[24] || '',
+            };
+            results.push(mappedRow);
         }
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or has no valid product rows' });
+        }
+
+        console.log(`📦 Processing ${results.length} Lenovo products from CSV`);
 
         // Transform and upsert to MongoDB
         const bulkOps = [];
