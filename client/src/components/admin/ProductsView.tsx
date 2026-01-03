@@ -262,6 +262,64 @@ export default function ProductsView() {
                 </div>
             )}
 
+            {/* BenQ Monitor Vendor CSV Upload - only visible for monitors */}
+            {(selectedCategory === 'monitor' || selectedCategory === 'monitors') && (
+                <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center text-white">
+                            <i className="fas fa-desktop text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-purple-900 text-sm">BenQ Monitor Import</h4>
+                            <p className="text-purple-700 text-xs">Upload BenQ CSV (Model, Product Name, Price, Specs)</p>
+                        </div>
+                    </div>
+                    <label className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition flex items-center gap-2 cursor-pointer shadow-md whitespace-nowrap">
+                        <i className="fas fa-upload"></i> Upload BenQ CSV
+                        <input
+                            type="file"
+                            accept=".csv"
+                            className="hidden"
+                            onChange={async (e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    const file = e.target.files[0];
+
+                                    // Ask if user wants to clear existing BenQ products
+                                    const clearExisting = confirm(
+                                        `🗑️ Clear existing BenQ monitors before import?\n\n` +
+                                        `Click OK to DELETE all existing BenQ monitors and import fresh.\n` +
+                                        `Click Cancel to ADD/UPDATE without deleting existing products.`
+                                    );
+
+                                    if (!confirm(`Upload BenQ CSV: ${file.name}?`)) return;
+
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    try {
+                                        setIsLoading(true);
+                                        const url = clearExisting
+                                            ? `${API_URL}/products/cat/monitors/benq/csv?clear=true`
+                                            : `${API_URL}/products/cat/monitors/benq/csv`;
+                                        const res = await axios.post(url, formData, {
+                                            headers: {
+                                                'x-user-email': 'admin@jps.com',
+                                                'Content-Type': 'multipart/form-data'
+                                            }
+                                        });
+                                        alert(res.data.message || 'BenQ Monitors Imported Successfully!');
+                                        window.location.reload();
+                                    } catch (err: any) {
+                                        console.error(err);
+                                        alert(err.response?.data?.message || 'Failed to upload BenQ CSV.');
+                                        setIsLoading(false);
+                                    }
+                                }
+                            }}
+                        />
+                    </label>
+                </div>
+            )}
+
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
                     <div className="p-8 text-center text-gray-500">Loading {selectedCategory} data...</div>

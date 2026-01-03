@@ -349,34 +349,152 @@ router.post('/cat/laptops/lenovo/csv', checkAuth, upload.single('file'), async (
             return res.status(400).json({ message: 'CSV file is empty or has no valid product rows' });
         }
 
-        console.log(`📦 Processing ${results.length} Lenovo products from CSV`);
+        console.log(`📦 Processing ${mappedRows.length} Lenovo products from CSV`);
 
         // Transform and upsert to MongoDB
-        const bulkOps = [];
-        for (const row of results) {
+        const productsToProcess = [];
+        for (const row of mappedRows) {
             const product = transformLenovoRow(row);
-            if (!product.id) continue;
-
-            bulkOps.push({
-                updateOne: {
-                    filter: { id: product.id },
-                    update: { $set: product },
-                    upsert: true
-                }
-            });
+            if (product.id) { // Only add if a valid ID was generated
+                productsToProcess.push(product);
+            }
         }
 
-        if (bulkOps.length > 0) {
-            await Product.bulkWrite(bulkOps);
+        let inserted = 0;
+        let updated = 0;
+
+        for (const product of productsToProcess) {
+            const existing = await Product.findOne({
+                $or: [
+                    { id: product.id },
+                    { name: product.name }
+                ]
+            });
+
+            if (existing) {
+                Object.assign(existing, product);
+                await existing.save();
+                updated++;
+            } else {
+                await Product.create(product);
+                inserted++;
+            }
         }
 
         // Audit
         const userEmail = req.headers['x-user-email'];
-        await logAdminAction(userEmail, 'UPLOAD_LENOVO_CSV', { count: bulkOps.length });
+        await logAdminAction(userEmail, 'UPLOAD_LENOVO_CSV', { count: productsToProcess.length });
 
-        res.json({ message: `Successfully imported ${bulkOps.length} Lenovo laptops to database.` });
+        res.json({
+            message: 'Lenovo CSV processed successfully',
+            inserted,
+            updated,
+            deleted: deletedCount
+        });
     } catch (err) {
-        console.error('Upload Lenovo CSV Error:', err);
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Transform BenQ Monitor CSV row to Product schema
+const transformBenqMonitorRow = (row) => {
+    // Helper to get value (handles quoted keys from csv-parser)
+    const get = (key) => row[key] || row[`"${key}"`] || '';
+
+    // Description is basically the specs string
+    const description = get('description');
+
+    return {
+        id: `benq_${get('model').toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+        name: get('product_name') || `BenQ ${get('model')} Monitor`,
+        brand: 'BenQ',
+        category: 'monitor',
+        price: Number(get('price') || 0),
+        image: get('image') || '',
+        stock: Number(get('stock') || 10),
+        available: true,
+        sold: 0,
+        description: description, // Used for short description/key features
+        specs: {
+            model: get('model'),
+            features: description // Also store in specs if needed specifically
+        }
+    };
+};
+
+// Upload BenQ Monitor CSV
+// Add ?clear=true query param to delete existing BenQ monitors before import
+router.post('/cat/monitors/benq/csv', checkAuth, upload.single('file'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    try {
+        // Check if clear option is requested
+        const clearExisting = req.query.clear === 'true';
+        let deletedCount = 0;
+
+        if (clearExisting) {
+            // Delete all existing BenQ monitors
+            const deleteResult = await Product.deleteMany({
+                brand: 'BenQ',
+                category: 'monitor'
+            });
+            deletedCount = deleteResult.deletedCount || 0;
+            console.log(`🗑️ Cleared ${deletedCount} existing BenQ monitors`);
+        }
+
+        // Parse CSV using standard csv-parser since this file has proper headers
+        const results = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on('data', (data) => results.push(transformBenqMonitorRow(data)))
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        // Clean up temp file
+        fs.unlinkSync(req.file.path);
+
+        let inserted = 0;
+        let updated = 0;
+
+        for (const product of results) {
+            // Skip invalid rows
+            if (!product.price || product.price === 0) continue;
+
+            const existing = await Product.findOne({
+                $or: [
+                    { id: product.id },
+                    { name: product.name }
+                ]
+            });
+
+            if (existing) {
+                Object.assign(existing, product);
+                await existing.save();
+                updated++;
+            } else {
+                await Product.create(product);
+                inserted++;
+            }
+        }
+
+        // Audit
+        const userEmail = req.headers['x-user-email'];
+        await logAdminAction(userEmail, 'UPLOAD_BENQ_MONITOR_CSV', { count: results.length });
+
+        res.json({
+            message: 'BenQ Monitors imported successfully',
+            inserted,
+            updated,
+            deleted: deletedCount
+        });
+    } catch (err) {
+        console.error(err);
+        // Clean up temp file on error
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }

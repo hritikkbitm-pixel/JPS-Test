@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Rate Limiting - Protect against DDoS
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // 200 requests per IP per 15 min
+    max: 2000, // Increased to 2000 for admin panel usage
     message: { error: 'Too many requests, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,

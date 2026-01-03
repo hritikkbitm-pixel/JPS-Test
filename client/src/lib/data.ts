@@ -43,6 +43,7 @@ export interface Product {
     stock: number;
     category: string;
     brand: string;
+    description?: string; // Added for BenQ monitors
     image: string;
     images?: string[]; // Added
     specs: ProductSpecs;
