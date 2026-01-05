@@ -397,6 +397,148 @@ router.post('/cat/laptops/lenovo/csv', checkAuth, upload.single('file'), async (
     }
 });
 
+// Transform HP Laptop CSV row to Product schema
+const transformHpRow = (row) => {
+    // Helper to get value (handles quoted keys from csv-parser)
+    const get = (key) => row[key] || row[`"${key}"`] || '';
+
+    const model = get('Model');
+    const partNo = get('Part no.');
+    const subBrand = get('Sub Brand');
+
+    // Parse prices - remove any non-numeric characters
+    const finalPriceStr = get('Final Price')?.toString().replace(/[^0-9.]/g, '') || '0';
+    const mrpStr = get('MRP')?.toString().replace(/[^0-9.]/g, '') || '0';
+    const finalPrice = Number(finalPriceStr) || 0;
+    const mrp = Number(mrpStr) || 0;
+
+    // Generate ID from part number
+    const id = partNo ? `hp_${partNo.toLowerCase().replace(/[^a-z0-9]/g, '_')}` : `hp_${model.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
+    // Build rich description from features
+    const features = get('Features');
+    const description = features || '';
+
+    return {
+        id: id,
+        name: model.startsWith('HP') ? model : `HP ${model}`.trim(),
+        brand: 'HP',
+        category: 'laptop',
+        price: finalPrice,
+        mrp: mrp > 0 ? mrp : undefined,
+        image: get('Image') || '',
+        stock: 10,
+        available: true,
+        sold: 0,
+        description: description,
+        specs: {
+            sub_brand: subBrand,
+            part_no: partNo,
+            processor: get('Processor'),
+            ram: get('RAM'),
+            storage: get('Storage'),
+            graphics: get('Graphics'),
+            os: get('OS/MSO'),
+            features: features,
+            display: get('Display'),
+            color: get('Colour'),
+            warranty: get('Service'),
+            segment: get('Category'), // Premium/Super Premium
+        }
+    };
+};
+
+// Upload HP Laptop CSV - special schema mapping
+// Add ?clear=true query param to delete existing HP laptops before import
+router.post('/cat/laptops/hp/csv', checkAuth, upload.single('file'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    try {
+        // Check if clear option is requested
+        const clearExisting = req.query.clear === 'true';
+        let deletedCount = 0;
+
+        if (clearExisting) {
+            // Delete all existing HP laptops
+            const deleteResult = await Product.deleteMany({
+                brand: 'HP',
+                category: 'laptop'
+            });
+            deletedCount = deleteResult.deletedCount || 0;
+            console.log(`🗑️ Cleared ${deletedCount} existing HP laptops`);
+        }
+
+        // Parse CSV - HP file has proper headers
+        const results = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on('data', (data) => {
+                    // Skip empty rows
+                    const model = data['Model'];
+                    if (model && model.trim()) {
+                        results.push(transformHpRow(data));
+                    }
+                })
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        // Clean up temp file
+        fs.unlinkSync(req.file.path);
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or has no valid product rows' });
+        }
+
+        console.log(`📦 Processing ${results.length} HP laptops from CSV`);
+
+        let inserted = 0;
+        let updated = 0;
+
+        for (const product of results) {
+            // Skip products without valid price
+            if (!product.price || product.price === 0) continue;
+
+            const existing = await Product.findOne({
+                $or: [
+                    { id: product.id },
+                    { name: product.name }
+                ]
+            });
+
+            if (existing) {
+                Object.assign(existing, product);
+                await existing.save();
+                updated++;
+            } else {
+                await Product.create(product);
+                inserted++;
+            }
+        }
+
+        // Audit
+        const userEmail = req.headers['x-user-email'];
+        await logAdminAction(userEmail, 'UPLOAD_HP_CSV', { count: results.length });
+
+        res.json({
+            message: 'HP Laptops imported successfully',
+            inserted,
+            updated,
+            deleted: deletedCount
+        });
+    } catch (err) {
+        console.error(err);
+        // Clean up temp file on error
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Transform BenQ Monitor CSV row to Product schema
 const transformBenqMonitorRow = (row) => {
     // Helper to get value (handles quoted keys from csv-parser)
