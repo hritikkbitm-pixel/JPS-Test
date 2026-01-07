@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useShop } from '@/context/ShopContext';
 import { prefetchCategory } from '@/hooks/usePrefetch';
@@ -19,6 +19,12 @@ const iconMap: Record<string, string> = {
     'keyboard': 'fas fa-keyboard',
     'laptop': 'fas fa-laptop',
     'monitor': 'fas fa-desktop',
+    'accessories': 'fas fa-headphones',
+    'headset': 'fas fa-headphones-alt',
+    'webcam': 'fas fa-video',
+    'gamepad': 'fas fa-gamepad',
+    'steering-wheel': 'fas fa-steering-wheel',
+    'gaming-accessories': 'fas fa-vr-cardboard',
     'all': 'fas fa-th-large'
 };
 
@@ -32,10 +38,17 @@ const categoryLabels: Record<string, string> = {
     'case': 'PC Cabinet',
     'psu': 'Power Supply',
     'cooling': 'CPU Coolers',
+    'cooler': 'Coolers',
     'mouse': 'Mice',
     'keyboard': 'Keyboards',
     'laptop': 'Laptops',
-    'monitor': 'Monitors'
+    'monitor': 'Monitors',
+    'accessories': 'Accessories',
+    'headset': 'Headsets',
+    'webcam': 'Webcams',
+    'gamepad': 'Gamepads',
+    'steering-wheel': 'Steering Wheels',
+    'gaming-accessories': 'Gaming Accessories'
 };
 
 interface SubcategoryGroup {
@@ -46,6 +59,45 @@ interface SubcategoryGroup {
 export default function CategoryDropdown() {
     const { categories, products } = useShop();
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+                setActiveCategory(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
+
+    // Toggle dropdown for touch devices
+    const handleToggleDropdown = useCallback(() => {
+        setIsDropdownOpen(prev => !prev);
+        if (isDropdownOpen) {
+            setActiveCategory(null);
+        }
+    }, [isDropdownOpen]);
+
+    // Handle category tap for touch devices
+    const handleCategoryTap = useCallback((e: React.MouseEvent | React.TouchEvent, categoryId: string) => {
+        // If this category's submenu is already open, allow navigation
+        if (activeCategory === categoryId) {
+            return; // Let the link navigate
+        }
+        // Otherwise, prevent navigation and open submenu
+        e.preventDefault();
+        setActiveCategory(categoryId);
+        prefetchCategory(categoryId);
+    }, [activeCategory]);
 
     // Prefetch category products when hovering
     const handleCategoryHover = useCallback((categoryId: string) => {
@@ -153,86 +205,131 @@ export default function CategoryDropdown() {
             result[cat.id] = groups;
         });
 
+        // Special hierarchical grouping for Accessories
+        const accessoriesSubcategories: SubcategoryGroup[] = [
+            {
+                title: 'Shop By Category',
+                items: [
+                    { label: 'Headsets', filter: 'category=headset' },
+                    { label: 'Webcams', filter: 'category=webcam' },
+                    { label: 'Gamepads', filter: 'category=gamepad' },
+                    { label: 'Steering Wheels', filter: 'category=steering-wheel' },
+                    { label: 'Gaming Accessories', filter: 'category=gaming-accessories' },
+                ]
+            }
+        ];
+
+        // Add brand-based grouping for accessories if needed
+        const accessoriesBrands = new Set<string>();
+        ['headset', 'webcam', 'gamepad', 'steering-wheel', 'gaming-accessories'].forEach(catId => {
+            products.filter(p => p.category === catId).forEach(p => {
+                if (p.brand) accessoriesBrands.add(p.brand);
+            });
+        });
+
+        if (accessoriesBrands.size > 0) {
+            accessoriesSubcategories.push({
+                title: 'Top Brands',
+                items: Array.from(accessoriesBrands).slice(0, 8).map(brand => ({
+                    label: brand,
+                    filter: `brand=${brand}`
+                }))
+            });
+        }
+
+        result['accessories'] = accessoriesSubcategories;
+
         return result;
     }, [categories, products]);
 
     return (
-        <div className="relative group z-50">
+        <div ref={dropdownRef} className="relative group z-50">
             {/* Trigger Button */}
-            <button className="bg-black text-white px-6 py-4 font-bold uppercase tracking-wider flex items-center gap-3 hover:bg-gray-800 transition w-64">
+            <button
+                onClick={handleToggleDropdown}
+                className="bg-black text-white px-6 py-4 font-bold uppercase tracking-wider flex items-center gap-3 hover:bg-gray-800 transition w-64"
+            >
                 <i className="fas fa-bars"></i>
                 Browse All Categories
-                <i className="fas fa-chevron-down ml-auto text-xs"></i>
+                <i className={`fas fa-chevron-down ml-auto text-xs transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}></i>
             </button>
 
-            {/* Dropdown Menu */}
-            <div className="absolute top-full left-0 w-64 bg-white shadow-xl border-t-2 border-brand-red hidden group-hover:block">
+            {/* Dropdown Menu - visible on hover (desktop) or when isDropdownOpen (touch) */}
+            <div className={`absolute top-full left-0 w-64 bg-white shadow-xl border-t-2 border-brand-red ${isDropdownOpen ? 'block' : 'hidden group-hover:block'}`}>
                 <div className="flex flex-col">
                     {categories.length > 0 ? (
-                        categories.map((category) => (
-                            <div
-                                key={category.id}
-                                className="relative"
-                                onMouseEnter={() => handleCategoryHover(category.id)}
-                                onMouseLeave={() => setActiveCategory(null)}
-                            >
-                                <Link
-                                    href={`/?category=${category.id}`}
-                                    className="group/item px-4 py-3 border-b border-gray-100 hover:bg-gray-50 flex items-center justify-between cursor-pointer transition"
+                        categories
+                            .filter(cat => !['headset', 'webcam', 'gamepad', 'steering-wheel', 'gaming-accessories'].includes(cat.id))
+                            .sort((a, b) => {
+                                if (a.id === 'accessories') return -1;
+                                if (b.id === 'accessories') return 1;
+                                return 0;
+                            })
+                            .map((category) => (
+                                <div
+                                    key={category.id}
+                                    className="relative"
+                                    onMouseEnter={() => handleCategoryHover(category.id)}
+                                    onMouseLeave={() => setActiveCategory(null)}
                                 >
-                                    <div className="flex items-center gap-3 text-sm font-bold text-gray-700 group-hover/item:text-brand-red">
-                                        <i className={`${iconMap[category.id] || 'fas fa-tag'} w-5 text-center text-gray-400 group-hover/item:text-brand-red`}></i>
-                                        {categoryLabels[category.id] || category.label}
-                                    </div>
-                                    <i className="fas fa-chevron-right text-[10px] text-gray-300 group-hover/item:text-brand-red"></i>
-                                </Link>
-
-                                {/* Mega Menu Flyout */}
-                                {activeCategory === category.id && subcategories[category.id]?.length > 0 && (
-                                    <div
-                                        className={`absolute left-full top-0 bg-white shadow-xl border-l border-gray-100 p-6 grid gap-6 ${category.id === 'gpu' && subcategories[category.id].length >= 3
-                                            ? 'min-w-[650px] grid-cols-3'
-                                            : 'min-w-[500px] grid-cols-2'
-                                            }`}
-                                        onMouseEnter={() => handleCategoryHover(category.id)}
+                                    <Link
+                                        href={`/?category=${category.id}`}
+                                        onClick={(e) => handleCategoryTap(e, category.id)}
+                                        className="group/item px-4 py-3 border-b border-gray-100 hover:bg-gray-50 flex items-center justify-between cursor-pointer transition"
                                     >
-                                        {subcategories[category.id].map((group, idx) => (
-                                            <div key={idx}>
-                                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b pb-2">
-                                                    {group.title}
-                                                </h4>
-                                                <ul className="space-y-2">
-                                                    {group.items.map((item, i) => (
-                                                        <li key={i}>
-                                                            <Link
-                                                                href={`/?category=${category.id}&${item.filter}`}
-                                                                className="text-sm text-gray-600 hover:text-brand-red transition block"
-                                                            >
-                                                                {item.label}
-                                                            </Link>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        ))}
-
-                                        {/* View All Link */}
-                                        <div className={`pt-4 border-t border-gray-100 ${category.id === 'gpu' && subcategories[category.id].length >= 3
-                                            ? 'col-span-3'
-                                            : 'col-span-2'
-                                            }`}>
-                                            <Link
-                                                href={`/?category=${category.id}`}
-                                                className="text-sm font-bold text-brand-red hover:underline flex items-center gap-2"
-                                            >
-                                                View All {categoryLabels[category.id] || category.label}
-                                                <i className="fas fa-arrow-right text-xs"></i>
-                                            </Link>
+                                        <div className="flex items-center gap-3 text-sm font-bold text-gray-700 group-hover/item:text-brand-red">
+                                            <i className={`${iconMap[category.id] || 'fas fa-tag'} w-5 text-center text-gray-400 group-hover/item:text-brand-red`}></i>
+                                            {categoryLabels[category.id] || category.label}
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))
+                                        <i className="fas fa-chevron-right text-[10px] text-gray-300 group-hover/item:text-brand-red"></i>
+                                    </Link>
+
+                                    {/* Mega Menu Flyout */}
+                                    {activeCategory === category.id && subcategories[category.id]?.length > 0 && (
+                                        <div
+                                            className={`absolute left-full top-0 bg-white shadow-xl border-l border-gray-100 p-6 grid gap-6 ${category.id === 'gpu' && subcategories[category.id].length >= 3
+                                                ? 'min-w-[650px] grid-cols-3'
+                                                : 'min-w-[500px] grid-cols-2'
+                                                }`}
+                                            onMouseEnter={() => handleCategoryHover(category.id)}
+                                        >
+                                            {subcategories[category.id].map((group, idx) => (
+                                                <div key={idx}>
+                                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 border-b pb-2">
+                                                        {group.title}
+                                                    </h4>
+                                                    <ul className="space-y-2">
+                                                        {group.items.map((item, i) => (
+                                                            <li key={i}>
+                                                                <Link
+                                                                    href={item.filter.startsWith('category=') ? `/?${item.filter}` : `/?category=${category.id}&${item.filter}`}
+                                                                    className="text-sm text-gray-600 hover:text-brand-red transition block"
+                                                                >
+                                                                    {item.label}
+                                                                </Link>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ))}
+
+                                            {/* View All Link */}
+                                            <div className={`pt-4 border-t border-gray-100 ${category.id === 'gpu' && subcategories[category.id].length >= 3
+                                                ? 'col-span-3'
+                                                : 'col-span-2'
+                                                }`}>
+                                                <Link
+                                                    href={`/?category=${category.id}`}
+                                                    className="text-sm font-bold text-brand-red hover:underline flex items-center gap-2"
+                                                >
+                                                    View All {categoryLabels[category.id] || category.label}
+                                                    <i className="fas fa-arrow-right text-xs"></i>
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
                     ) : (
                         <div className="px-4 py-6 text-center text-gray-400 text-sm">
                             <i className="fas fa-folder-open mb-2 block text-xl"></i>

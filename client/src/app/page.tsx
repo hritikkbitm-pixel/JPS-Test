@@ -73,8 +73,10 @@ function HomeContent() {
     if (productIdsFromUrl) {
       const ids = productIdsFromUrl.split(',');
       initialProducts = products.filter(p => ids.includes(p.id || ''));
-    } else if (categoryFromUrl === 'all') {
       initialProducts = products;
+    } else if (categoryFromUrl === 'accessories') {
+      const accessoryCats = ['headset', 'webcam', 'gamepad', 'steering-wheel', 'gaming-accessories', 'accessories'];
+      initialProducts = products.filter(p => accessoryCats.includes(p.category));
     } else {
       initialProducts = products.filter(p => p.category === categoryFromUrl);
     }
@@ -184,7 +186,16 @@ function HomeContent() {
       </div>
 
       <h1 className="text-3xl font-bold uppercase mb-6 border-b pb-2">
-        {productIdsFromUrl ? 'Featured Collection' : categoryFromUrl === 'gpu' ? 'Graphics Card' : categoryFromUrl === 'psu' ? 'Power Supply' : categoryFromUrl === 'case' ? 'Cabinet' : categoryFromUrl}
+        {productIdsFromUrl ? 'Featured Collection' :
+          categoryFromUrl === 'gpu' ? 'Graphics Card' :
+            categoryFromUrl === 'psu' ? 'Power Supply' :
+              categoryFromUrl === 'case' ? 'Cabinet' :
+                categoryFromUrl === 'gaming-accessories' ? 'Gaming Accessories' :
+                  categoryFromUrl === 'steering-wheel' ? 'Steering Wheels' :
+                    categoryFromUrl === 'headset' ? 'Headsets' :
+                      categoryFromUrl === 'webcam' ? 'Webcams' :
+                        categoryFromUrl === 'gamepad' ? 'Gamepads' :
+                          categoryFromUrl}
       </h1>
 
       <div className="flex flex-col lg:flex-row gap-8">

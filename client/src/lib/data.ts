@@ -132,7 +132,13 @@ export const initialCategories: Category[] = [
     { id: 'mouse', label: 'Mice', image: 'https://img.freepik.com/free-photo/computer-mouse-isolated_23-2150834160.jpg' },
     { id: 'keyboard', label: 'Keyboards', image: 'https://img.freepik.com/free-photo/computer-keyboard-isolated_23-2150834165.jpg' },
     { id: 'laptop', label: 'Laptops', image: 'https://img.freepik.com/free-photo/laptop-isolated-white-background_23-2150834170.jpg' },
-    { id: 'monitor', label: 'Monitors', image: 'https://img.freepik.com/free-photo/monitor-isolated-white-background_23-2150834175.jpg' }
+    { id: 'monitor', label: 'Monitors', image: 'https://img.freepik.com/free-photo/monitor-isolated-white-background_23-2150834175.jpg' },
+    { id: 'accessories', label: 'Accessories', image: 'https://img.freepik.com/free-photo/gamer-workspace-with-keyboard-mouse_23-2150834165.jpg' },
+    { id: 'headset', label: 'Headsets', image: 'https://img.freepik.com/free-photo/gamer-headset-isolated_23-2150834160.jpg' },
+    { id: 'webcam', label: 'Webcams', image: 'https://img.freepik.com/free-photo/webcam-isolated-white-background_23-2150834175.jpg' },
+    { id: 'gamepad', label: 'Gamepads', image: 'https://img.freepik.com/free-photo/gamepad-isolated-white-background_23-2150834175.jpg' },
+    { id: 'steering-wheel', label: 'Steering Wheels', image: 'https://img.freepik.com/free-photo/steering-wheel-isolated_23-2150834175.jpg' },
+    { id: 'gaming-accessories', label: 'Gaming Accessories', image: 'https://img.freepik.com/free-photo/gaming-gear-isolated_23-2150834175.jpg' }
 ];
 
 export const banners: Banner[] = [

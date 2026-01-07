@@ -378,6 +378,122 @@ export default function ProductsView() {
                 </div>
             )}
 
+            {/* Logitech Vendor CSV Upload - visible for mice and keyboards */}
+            {(['mouse', 'mice', 'keyboard', 'keyboards'].includes(selectedCategory)) && (
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-100 border border-emerald-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
+                            <i className={`fas ${selectedCategory.includes('mouse') ? 'fa-mouse' : 'fa-keyboard'} text-lg`}></i>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-emerald-900 text-sm">Logitech Vendor Import</h4>
+                            <p className="text-emerald-700 text-xs">Upload Logitech CSV with automatic name cleaning and price mapping.</p>
+                        </div>
+                    </div>
+                    <label className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition flex items-center gap-2 cursor-pointer shadow-md whitespace-nowrap">
+                        <i className="fas fa-upload"></i> Upload Logitech CSV
+                        <input
+                            type="file"
+                            accept=".csv"
+                            className="hidden"
+                            onChange={async (e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    const file = e.target.files[0];
+                                    if (!confirm(`Upload Logitech CSV: ${file.name}?`)) return;
+
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    try {
+                                        setIsLoading(true);
+                                        const res = await axios.post(`${API_URL}/products/cat/logitech/csv?category=${selectedCategory}`, formData, {
+                                            headers: {
+                                                'x-user-email': 'admin@jps.com',
+                                                'Content-Type': 'multipart/form-data'
+                                            }
+                                        });
+                                        alert(res.data.message || 'Logitech products imported successfully!');
+                                        window.location.reload();
+                                    } catch (err: any) {
+                                        console.error(err);
+                                        alert(err.response?.data?.message || 'Failed to upload Logitech CSV.');
+                                        setIsLoading(false);
+                                    }
+                                }
+                            }}
+                        />
+                    </label>
+                </div>
+            )}
+
+            {/* MSI Specialized Vendor Import - visible for relevant internal categories */}
+            {(['motherboard', 'gpu', 'case', 'cooling', 'monitor', 'psu', 'storage'].includes(selectedCategory)) && (
+                <div className="bg-gradient-to-r from-red-50 to-rose-100 border border-red-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-brand-red rounded-lg flex items-center justify-center text-white">
+                            <i className="fas fa-microchip text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-red-900 text-sm">MSI Specialized Import</h4>
+                            <p className="text-red-700 text-xs">Sync pre-optimized MSI {selectedCategory} data (Specs, Images, and Prices).</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={async () => {
+                            if (!confirm(`Import synchronized MSI ${selectedCategory} data from server inventory?`)) return;
+                            try {
+                                setIsLoading(true);
+                                const res = await axios.post(`${API_URL}/products/msi/import`, { category: selectedCategory }, {
+                                    headers: { 'x-user-email': 'admin@jps.com' }
+                                });
+                                alert(res.data.message || 'MSI products imported successfully!');
+                                window.location.reload();
+                            } catch (err: any) {
+                                console.error(err);
+                                alert(err.response?.data?.message || 'Failed to import MSI data. Ensure CSV exists in server data directory.');
+                                setIsLoading(false);
+                            }
+                        }}
+                        className="bg-brand-red hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition flex items-center gap-2 shadow-md whitespace-nowrap"
+                    >
+                        <i className="fas fa-sync-alt"></i> Sync MSI {selectedCategory}s
+                    </button>
+                </div>
+            )}
+
+            {/* Logitech Specialized Vendor Import - visible for relevant internal categories */}
+            {(['headset', 'webcam', 'gamepad', 'steering-wheel', 'gaming-accessories', 'mouse', 'keyboard'].includes(selectedCategory)) && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-100 border border-blue-200 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                            <i className="fas fa-mouse text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-blue-900 text-sm">Logitech Specialized Import</h4>
+                            <p className="text-blue-700 text-xs">Sync pre-optimized Logitech {selectedCategory} data (Specs, Images, and Prices).</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={async () => {
+                            if (!confirm(`Import synchronized Logitech ${selectedCategory} data from server inventory?`)) return;
+                            try {
+                                setIsLoading(true);
+                                const res = await axios.post(`${API_URL}/products/logitech/import`, { category: selectedCategory }, {
+                                    headers: { 'x-user-email': 'admin@jps.com' }
+                                });
+                                alert(res.data.message || 'Logitech products imported successfully!');
+                                window.location.reload();
+                            } catch (err: any) {
+                                console.error(err);
+                                alert(err.response?.data?.message || 'Failed to import Logitech data. Ensure CSV exists in server data directory.');
+                                setIsLoading(false);
+                            }
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-bold uppercase tracking-wider transition flex items-center gap-2 shadow-md whitespace-nowrap"
+                    >
+                        <i className="fas fa-sync-alt"></i> Sync Logitech {selectedCategory}s
+                    </button>
+                </div>
+            )}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
                     <div className="p-8 text-center text-gray-500">Loading {selectedCategory} data...</div>
@@ -423,47 +539,50 @@ export default function ProductsView() {
                                     ))
                                 )}
                             </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
+                        </table >
+                    </div >
+                )
+                }
+            </div >
 
-            {isProductModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm fade-in">
-                    <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-lg flex flex-col shadow-2xl animate-scale-in">
-                        <div className="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
-                            <h3 className="font-black text-xl text-gray-800 uppercase">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
-                            <button onClick={() => setIsProductModalOpen(false)} className="text-gray-400 hover:text-brand-red text-2xl transition">&times;</button>
-                        </div>
-                        <div className="p-6 overflow-y-auto">
-                            <form onSubmit={handleSaveProduct} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    {Object.keys(productForm).length > 0 ? Object.keys(productForm).map(key => {
-                                        if (key === 'id') return null;
-                                        return (
-                                            <div key={key} className="col-span-1">
-                                                <label className="block text-gray-700 text-xs font-bold mb-1 uppercase truncate" title={key}>{key.replace(/_/g, ' ')}</label>
-                                                <input
-                                                    type="text"
-                                                    value={productForm[key]}
-                                                    onChange={e => setProductForm({ ...productForm, [key]: e.target.value })}
-                                                    className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-red"
-                                                />
-                                            </div>
-                                        )
-                                    }) : (
-                                        <div className="col-span-2 text-gray-500">Add a product to see fields...</div>
-                                    )}
-                                </div>
+            {
+                isProductModalOpen && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm fade-in">
+                        <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-lg flex flex-col shadow-2xl animate-scale-in">
+                            <div className="p-6 border-b flex justify-between items-center bg-gray-50 rounded-t-lg">
+                                <h3 className="font-black text-xl text-gray-800 uppercase">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+                                <button onClick={() => setIsProductModalOpen(false)} className="text-gray-400 hover:text-brand-red text-2xl transition">&times;</button>
+                            </div>
+                            <div className="p-6 overflow-y-auto">
+                                <form onSubmit={handleSaveProduct} className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {Object.keys(productForm).length > 0 ? Object.keys(productForm).map(key => {
+                                            if (key === 'id') return null;
+                                            return (
+                                                <div key={key} className="col-span-1">
+                                                    <label className="block text-gray-700 text-xs font-bold mb-1 uppercase truncate" title={key}>{key.replace(/_/g, ' ')}</label>
+                                                    <input
+                                                        type="text"
+                                                        value={productForm[key]}
+                                                        onChange={e => setProductForm({ ...productForm, [key]: e.target.value })}
+                                                        className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:border-brand-red"
+                                                    />
+                                                </div>
+                                            )
+                                        }) : (
+                                            <div className="col-span-2 text-gray-500">Add a product to see fields...</div>
+                                        )}
+                                    </div>
 
-                                <button type="submit" className="w-full bg-brand-red text-white font-bold py-3 rounded hover:bg-red-700 transition uppercase tracking-wider text-sm shadow-md mt-4">
-                                    {editingProduct ? 'Update Product' : 'Add Product'}
-                                </button>
-                            </form>
+                                    <button type="submit" className="w-full bg-brand-red text-white font-bold py-3 rounded hover:bg-red-700 transition uppercase tracking-wider text-sm shadow-md mt-4">
+                                        {editingProduct ? 'Update Product' : 'Add Product'}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

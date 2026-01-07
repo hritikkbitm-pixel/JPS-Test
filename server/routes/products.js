@@ -29,6 +29,11 @@ const getCsvPath = (category) => {
     else if (cat === 'keyboard' || cat === 'keyboards') filename = 'keyboards.csv';
     else if (cat === 'laptop' || cat === 'laptops') filename = 'laptops.csv';
     else if (cat === 'monitor' || cat === 'monitors') filename = 'monitors.csv';
+    else if (cat === 'headset') filename = 'headset.csv';
+    else if (cat === 'webcam') filename = 'webcam.csv';
+    else if (cat === 'gamepad') filename = 'gamepad.csv';
+    else if (cat === 'steering-wheel') filename = 'steering-wheel.csv';
+    else if (cat === 'gaming-accessories') filename = 'gaming-accessories.csv';
     else return null;
 
     return path.join(PRODUCTS_DIR, filename);
@@ -565,54 +570,99 @@ const transformBenqMonitorRow = (row) => {
     };
 };
 
-// Upload BenQ Monitor CSV
-// Add ?clear=true query param to delete existing BenQ monitors before import
-router.post('/cat/monitors/benq/csv', checkAuth, upload.single('file'), async (req, res) => {
+// Transform Logitech Product CSV row to Product schema
+const transformLogitechRow = (row, category) => {
+    // Helper to get value (handles quoted keys from csv-parser)
+    const get = (key) => row[key] || row[`"${key}"`] || '';
+
+    let productName = get('Product Name');
+
+    // 1. Clean up product name - remove suffixes like " - APANZ-122", " - US", etc.
+    let cleanName = productName
+        .replace(/ - [A-Z0-9\+\-\/\#\s]+-\d+$/g, '')
+        .replace(/ - [A-Z]{2,5}$/g, '')
+        .replace(/Â¬Ã†/g, '')
+        .replace(/â‚¬/g, '')
+        .replace(/â€šǹìƒâ¢/g, '')
+        .trim();
+
+    // 2. Parse prices
+    const finalPriceStr = get('Final Price')?.toString().replace(/[^0-9.]/g, '') || '0';
+    const mrpRashiStr = get('MRP Rashi')?.toString().replace(/[^0-9.]/g, '') || '0';
+    const mrpSupertronStr = get('MRP Supertron')?.toString().replace(/[^0-9.]/g, '') || '0';
+
+    const finalPrice = Number(finalPriceStr) || 0;
+    const mrp = Math.max(Number(mrpRashiStr) || 0, Number(mrpSupertronStr) || 0);
+
+    // 3. Availability
+    const isAvailable = get('Rashi Available') === 'YES' || get('Supertron Available') === 'YES' || get('Available') === 'YES' || get('stock_status') === 'In Stock';
+
+    // 4. Generate ID
+    const partCode = get('Part Code') || get('Part no.');
+    const id = partCode ? `logi_${partCode.toLowerCase().replace(/[^a-z0-9]/g, '_')}` : `logi_${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
+    return {
+        id: id,
+        name: cleanName,
+        brand: 'Logitech',
+        category: category,
+        price: finalPrice,
+        mrp: mrp > finalPrice ? mrp : undefined,
+        image: get('Image') || '',
+        stock: 10,
+        available: isAvailable,
+        sold: 0,
+        description: get('Short Description') || '',
+        specs: {
+            part_code: partCode,
+            warranty: get('Warranty'),
+            key_features: get('Key Features'),
+            long_description: get('Long Description'),
+            hierarchy_2: get('Hierarchy 2'),
+            hierarchy_3: get('Hierarchy 3'),
+            strategic_pillar: get('Strategic Pillar'),
+        }
+    };
+};
+
+// Upload Logitech CSV - special schema mapping
+router.post('/cat/logitech/csv', checkAuth, upload.single('file'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
 
+    const category = req.query.category || 'mouse';
+
     try {
-        // Check if clear option is requested
-        const clearExisting = req.query.clear === 'true';
-        let deletedCount = 0;
-
-        if (clearExisting) {
-            // Delete all existing BenQ monitors
-            const deleteResult = await Product.deleteMany({
-                brand: 'BenQ',
-                category: 'monitor'
-            });
-            deletedCount = deleteResult.deletedCount || 0;
-            console.log(`🗑️ Cleared ${deletedCount} existing BenQ monitors`);
-        }
-
-        // Parse CSV using standard csv-parser since this file has proper headers
         const results = [];
         await new Promise((resolve, reject) => {
             fs.createReadStream(req.file.path)
                 .pipe(csv())
-                .on('data', (data) => results.push(transformBenqMonitorRow(data)))
+                .on('data', (data) => {
+                    const productName = data['Product Name'];
+                    if (productName && productName.trim()) {
+                        results.push(transformLogitechRow(data, category));
+                    }
+                })
                 .on('end', resolve)
                 .on('error', reject);
         });
 
-        // Clean up temp file
         fs.unlinkSync(req.file.path);
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or has no valid product rows' });
+        }
+
+        console.log(`📦 Processing ${results.length} Logitech products from CSV`);
 
         let inserted = 0;
         let updated = 0;
 
         for (const product of results) {
-            // Skip invalid rows
             if (!product.price || product.price === 0) continue;
 
-            const existing = await Product.findOne({
-                $or: [
-                    { id: product.id },
-                    { name: product.name }
-                ]
-            });
+            const existing = await Product.findOne({ id: product.id });
 
             if (existing) {
                 Object.assign(existing, product);
@@ -624,22 +674,17 @@ router.post('/cat/monitors/benq/csv', checkAuth, upload.single('file'), async (r
             }
         }
 
-        // Audit
         const userEmail = req.headers['x-user-email'];
-        await logAdminAction(userEmail, 'UPLOAD_BENQ_MONITOR_CSV', { count: results.length });
+        await logAdminAction(userEmail, 'UPLOAD_LOGITECH_CSV', { category, count: results.length });
 
         res.json({
-            message: 'BenQ Monitors imported successfully',
+            message: `Logitech ${category}s imported successfully`,
             inserted,
-            updated,
-            deleted: deletedCount
+            updated
         });
     } catch (err) {
         console.error(err);
-        // Clean up temp file on error
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
+        if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
         res.status(500).json({ message: err.message });
     }
 });
@@ -745,42 +790,60 @@ router.post('/cat/:category/csv', checkAuth, upload.single('file'), async (req, 
 
 // Update Row in Category CSV
 router.put('/cat/:category/:id', checkAuth, async (req, res) => {
-    const csvPath = getCsvPath(req.params.category);
-    if (!csvPath || !fs.existsSync(csvPath)) {
-        return res.status(404).json({ message: 'Category CSV not found' });
-    }
+    const { category, id } = req.params;
+    const updateData = req.body;
 
     try {
-        const rows = [];
-        await new Promise((resolve, reject) => {
-            fs.createReadStream(csvPath)
-                .pipe(csv())
-                .on('data', row => rows.push(row))
-                .on('end', resolve)
-                .on('error', reject);
-        });
+        // 1. Update MongoDB directly - this is the primary source of truth now
+        const updatedProduct = await Product.findOneAndUpdate(
+            { id: id },
+            { $set: updateData },
+            { new: true, upsert: true }
+        );
 
-        const index = rows.findIndex(r => r.id === req.params.id);
-        if (index === -1) return res.status(404).json({ message: 'Product not found in CSV' });
+        // 2. Sync to Category CSV for persistence if it exists
+        const csvPath = getCsvPath(category);
+        if (csvPath && fs.existsSync(csvPath)) {
+            const rows = [];
+            await new Promise((resolve, reject) => {
+                const stream = fs.createReadStream(csvPath)
+                    .pipe(csv())
+                    .on('data', row => rows.push(row))
+                    .on('end', resolve)
+                    .on('error', reject);
+            });
 
-        // Update row
-        rows[index] = { ...rows[index], ...req.body };
+            const index = rows.findIndex(r => (r.id || r['"id"']) === id);
 
-        // Write
-        const json2csvParser = new Parser({ fields: Object.keys(rows[0]) });
-        const csvData = json2csvParser.parse(rows);
-        fs.writeFileSync(csvPath, csvData);
+            // Prepare CSV-safe data (flatten if necessary, though mostly it is)
+            const csvRow = { ...updateData };
+            // If specs is an object, we don't want to stringify it into a single cell usually, 
+            // but for simple sync back, we'll just keep the top level fields.
+            if (typeof csvRow.specs === 'object') delete csvRow.specs;
 
-        // Sync
-        await syncInventory();
+            if (index !== -1) {
+                rows[index] = { ...rows[index], ...csvRow };
+            } else {
+                // Product was in Mongo but not in this CSV, add it.
+                rows.push({ id: id, ...csvRow });
+            }
+
+            // Write back to CSV
+            if (rows.length > 0) {
+                const json2csvParser = new Parser({ fields: Object.keys(rows[0]) });
+                const csvData = json2csvParser.parse(rows);
+                fs.writeFileSync(csvPath, csvData);
+            }
+        }
 
         // Audit
         const userEmail = req.headers['x-user-email'];
-        await logAdminAction(userEmail, 'UPDATE_PRODUCT_CSV', { category: req.params.category, id: req.params.id });
+        await logAdminAction(userEmail, 'UPDATE_PRODUCT', { category, id });
 
-        res.json(rows[index]);
+        res.json(updatedProduct);
 
     } catch (err) {
+        console.error('Update Product Error:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -834,6 +897,194 @@ router.delete('/cat/:category/:id', checkAuth, async (req, res) => {
         res.json({ message: 'Product deleted' });
 
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Transform MSI CSV row to Product schema
+const transformMsiRow = (row, category) => {
+    // Helper to get value (handles quoted keys from csv-parser)
+    const get = (key) => row[key] || row[`"${key}"`] || '';
+
+    const id = get('id');
+    const name = get('name');
+    const brand = get('brand') || 'MSI';
+
+    // Parse prices - MSI CSV has 'price' (landing) and 'final_price' (selling)
+    const finalPriceStr = get('final_price')?.toString().replace(/[^0-9.]/g, '') || '0';
+    const landingPriceStr = get('price')?.toString().replace(/[^0-9.]/g, '') || '0';
+    const finalPrice = Number(finalPriceStr) || 0;
+    const landingPrice = Number(landingPriceStr) || 0;
+
+    const image = get('image') || '';
+    const availability = get('Availability');
+
+    // Combine descriptions
+    const desc1 = get('description_1');
+    const desc2 = get('description_2');
+    const description = [desc1, desc2].filter(Boolean).join('\n\n');
+
+    // All other fields go into specs
+    const coreFields = ['id', 'name', 'brand', 'Availability', 'price', 'final_price', 'image', 'description_1', 'description_2'];
+    const specs = {};
+    Object.keys(row).forEach(key => {
+        const cleanKey = key.replace(/"/g, '');
+        if (!coreFields.includes(cleanKey)) {
+            specs[cleanKey] = row[key];
+        }
+    });
+
+    // Add landing price and combined description to specs for compatibility
+    specs.landing_price = landingPrice;
+    specs.msi_description = description;
+
+    // Map category
+    let dbCategory = category.toLowerCase();
+    if (dbCategory === 'cabinet' || dbCategory === 'case') dbCategory = 'case';
+    if (dbCategory === 'cooler' || dbCategory === 'cooling') dbCategory = 'cooling';
+    if (dbCategory === 'ssd' || dbCategory === 'storage') dbCategory = 'storage';
+
+    return {
+        id: id,
+        name: name,
+        brand: brand,
+        category: dbCategory,
+        price: finalPrice,
+        image: image,
+        stock: 10,
+        available: availability === 'Avl' || availability === 'In Stock',
+        sold: 0,
+        specs: specs
+    };
+};
+
+// MSI Specialized Import (Processes files from /server/data/products/msi/)
+router.post('/msi/import', checkAuth, async (req, res) => {
+    const { category } = req.body;
+    if (!category) return res.status(400).json({ message: 'Category is required' });
+
+    let filename = '';
+    const cat = category.toLowerCase();
+
+    // Map selecting category to correct MSI CSV filename
+    if (cat === 'motherboard') filename = 'msi-motherboard.csv';
+    else if (cat === 'gpu') filename = 'msi-gpu.csv';
+    else if (cat === 'case' || cat === 'cabinet') filename = 'msi-cabinet.csv';
+    else if (cat === 'cooling' || cat === 'cooler') filename = 'msi-cooler.csv';
+    else if (cat === 'monitor') filename = 'msi-monitor.csv';
+    else if (cat === 'psu') filename = 'msi-psu.csv';
+    else if (cat === 'storage' || cat === 'ssd') filename = 'msi-ssd.csv';
+    else return res.status(400).json({ message: `No MSI import data for category: ${category}` });
+
+    const msiDataDir = path.join(__dirname, '../data/products/msi');
+    const csvPath = path.join(msiDataDir, filename);
+
+    if (!fs.existsSync(csvPath)) {
+        return res.status(404).json({ message: `MSI CSV for ${category} not found at ${csvPath}` });
+    }
+
+    try {
+        const results = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(csvPath)
+                .pipe(csv())
+                .on('data', (data) => {
+                    const transformed = transformMsiRow(data, cat);
+                    if (transformed.id) results.push(transformed);
+                })
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or invalid' });
+        }
+
+        const bulkOps = results.map(product => ({
+            updateOne: {
+                filter: { id: product.id },
+                update: { $set: product },
+                upsert: true
+            }
+        }));
+
+        await Product.bulkWrite(bulkOps);
+
+        const userEmail = req.headers['x-user-email'];
+        await logAdminAction(userEmail, 'IMPORT_MSI_CATEGORY', { category: cat, count: results.length });
+
+        res.json({
+            message: `Successfully imported ${results.length} MSI ${category} items to database.`,
+            count: results.length
+        });
+    } catch (err) {
+        console.error('MSI Import Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Logitech Specialized Import (Processes files from /server/data/products/logitech/)
+router.post('/logitech/import', checkAuth, async (req, res) => {
+    const { category } = req.body;
+    if (!category) return res.status(400).json({ message: 'Category is required' });
+
+    let filename = '';
+    const cat = category.toLowerCase();
+
+    // Map selecting category to correct Logitech CSV filename
+    if (cat === 'headset') filename = 'logitech-headset.csv';
+    else if (cat === 'webcam') filename = 'logitech-webcam.csv';
+    else if (cat === 'gamepad') filename = 'logitech-gamepad.csv';
+    else if (cat === 'steering-wheel') filename = 'logitech-steering-wheel.csv';
+    else if (cat === 'gaming-accessories') filename = 'logitech-gaming-accessories.csv';
+    else if (cat === 'mouse' || cat === 'mice') filename = 'logitech-mice.csv';
+    else if (cat === 'keyboard' || cat === 'keyboards') filename = 'logitech-keyboard.csv';
+    else return res.status(400).json({ message: `No Logitech import data for category: ${category}` });
+
+    const logitechDataDir = path.join(__dirname, '../data/products/logitech');
+    const csvPath = path.join(logitechDataDir, filename);
+
+    if (!fs.existsSync(csvPath)) {
+        return res.status(404).json({ message: `Logitech CSV for ${category} not found at ${csvPath}` });
+    }
+
+    try {
+        const results = [];
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(csvPath)
+                .pipe(csv())
+                .on('data', (data) => {
+                    if (data['Product Name']) {
+                        results.push(transformLogitechRow(data, cat));
+                    }
+                })
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV file is empty or invalid' });
+        }
+
+        const bulkOps = results.map(product => ({
+            updateOne: {
+                filter: { id: product.id },
+                update: { $set: product },
+                upsert: true
+            }
+        }));
+
+        await Product.bulkWrite(bulkOps);
+
+        const userEmail = req.headers['x-user-email'];
+        await logAdminAction(userEmail, 'IMPORT_LOGITECH_CATEGORY', { category: cat, count: results.length });
+
+        res.json({
+            message: `Successfully imported ${results.length} Logitech ${category} items to database.`,
+            count: results.length
+        });
+    } catch (err) {
+        console.error('Logitech Import Error:', err);
         res.status(500).json({ message: err.message });
     }
 });

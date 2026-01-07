@@ -13,6 +13,7 @@ export default function UniversalProductView({ product }: { product: Product }) 
 
     // Check if this is a laptop with a long spec image
     const isLaptop = product.category === 'laptop';
+    const isLogitech = product.brand?.toLowerCase() === 'logitech';
     const longSpecImage = (product.specs as any)?.long_spec_image;
     const hasLongSpecImage = isLaptop && longSpecImage;
 
@@ -88,25 +89,42 @@ export default function UniversalProductView({ product }: { product: Product }) 
                         {/* 3. Description */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8 mb-8">
                             <h2 className="text-xl font-black uppercase text-gray-800 mb-6 flex items-center gap-2">
-                                Overview
+                                {isLogitech ? (
+                                    <><i className="fas fa-info-circle text-blue-500"></i> Product Overview</>
+                                ) : 'Overview'}
                             </h2>
-                            {/* Key Features */}
-                            <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-                                <h3 className="text-sm font-bold uppercase text-gray-700 mb-2">Key Features</h3>
-                                <ul className="list-disc pl-5 space-y-1">
-                                    {(product.specs as any).key_features || (product.specs as any).features || (product.description && !isLaptop) ?
-                                        String((product.specs as any).key_features || (product.specs as any).features || product.description)
-                                            .split(/[,;]/) // Split by comma or semicolon
-                                            .map((feat, idx) => (
-                                                <li key={idx} className="text-sm text-gray-600">{feat.trim()}</li>
-                                            ))
-                                        : <li className="text-sm text-gray-400 italic">No key features listed.</li>
-                                    }
-                                </ul>
-                            </div>
 
-                            {/* Long Description */}
-                            <div>
+                            {/* Logitech Key Features Rendering */}
+                            {isLogitech && (product.specs as any).key_features ? (
+                                <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {(product.specs as any).key_features.split('|').map((feature: string, idx: number) => (
+                                        <div key={idx} className="flex items-start gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm hover:border-emerald-200 transition-all">
+                                            <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <i className="fas fa-check text-emerald-600 text-[10px]"></i>
+                                            </div>
+                                            <p className="text-gray-700 text-sm font-medium leading-relaxed">{feature.trim()}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                /* Standard Key Features for other brands */
+                                <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+                                    <h3 className="text-sm font-bold uppercase text-gray-700 mb-2">Key Features</h3>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        {(product.specs as any).key_features || (product.specs as any).features || (product.description && !isLaptop) ?
+                                            String((product.specs as any).key_features || (product.specs as any).features || product.description)
+                                                .split(/[,;]/) // Split by comma or semicolon
+                                                .map((feat, idx) => (
+                                                    <li key={idx} className="text-sm text-gray-600">{feat.trim()}</li>
+                                                ))
+                                            : <li className="text-sm text-gray-400 italic">No key features listed.</li>
+                                        }
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Long Description / Overview */}
+                            <div className="prose prose-blue max-w-none">
                                 {renderDescription((product.specs as any).long_description || (product.specs as any).short_description || product.description)}
                             </div>
                         </div>
@@ -115,7 +133,20 @@ export default function UniversalProductView({ product }: { product: Product }) 
 
                     {/* RIGHT: Specs Sidebar (Sticky on Desktop) */}
                     <div className="w-full lg:w-1/3">
-                        <div className="sticky top-24">
+                        <div className="sticky top-24 space-y-6">
+                            {/* Logitech Warranty Badge */}
+                            {isLogitech && (product.specs as any).warranty && (
+                                <div className="bg-emerald-600 rounded-xl p-6 text-white overflow-hidden relative group shadow-lg shadow-emerald-200/50">
+                                    <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                                        <i className="fas fa-shield-alt text-8xl"></i>
+                                    </div>
+                                    <div className="relative z-10">
+                                        <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-widest mb-1 italic">Warranty Coverage</p>
+                                        <p className="text-xl font-black">{((product.specs as any).warranty)}</p>
+                                        <p className="mt-2 text-emerald-100/70 text-[10px] leading-tight">Manufacturer warranty included with all authentic products.</p>
+                                    </div>
+                                </div>
+                            )}
                             <ProductSpecs product={product} />
                         </div>
                     </div>
