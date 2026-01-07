@@ -53,6 +53,43 @@ export default function RootLayout({
           rel="stylesheet"
           crossOrigin="anonymous"
         />
+
+        {/* JSON-LD Schema: Organization + WebSite for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://www.jpsenterprises.in/#organization",
+                  "name": "JPS Enterprises",
+                  "url": "https://www.jpsenterprises.in",
+                  "logo": "https://www.jpsenterprises.in/logo.png",
+                  "description": "India's premier destination for high-end custom PC builds, gaming hardware, laptops, and computer components.",
+                  "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer service",
+                    "areaServed": "IN"
+                  }
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.jpsenterprises.in/#website",
+                  "url": "https://www.jpsenterprises.in",
+                  "name": "JPS Enterprises",
+                  "publisher": { "@id": "https://www.jpsenterprises.in/#organization" },
+                  "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://www.jpsenterprises.in/search?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                  }
+                }
+              ]
+            })
+          }}
+        />
       </head>
       <body
         className={`${inter.variable} antialiased flex flex-col min-h-screen text-gray-800`}
