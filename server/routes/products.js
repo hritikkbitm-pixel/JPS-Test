@@ -840,6 +840,20 @@ router.put('/cat/:category/:id', checkAuth, async (req, res) => {
         const userEmail = req.headers['x-user-email'];
         await logAdminAction(userEmail, 'UPDATE_PRODUCT', { category, id });
 
+        // Trigger Next.js cache revalidation for immediate frontend update
+        try {
+            const revalidateUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const revalidateSecret = process.env.REVALIDATE_SECRET || 'jps-revalidate-2024';
+            await fetch(`${revalidateUrl}/api/revalidate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: id, secret: revalidateSecret })
+            });
+            console.log(`✅ Revalidated cache for product: ${id}`);
+        } catch (revalError) {
+            console.warn('Cache revalidation failed (non-critical):', revalError.message);
+        }
+
         res.json(updatedProduct);
 
     } catch (err) {
