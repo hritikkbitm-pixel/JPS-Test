@@ -206,7 +206,7 @@ export default function Header() {
                             <i className="fas fa-bolt mr-2 text-brand-red"></i>New Arrivals
                         </Link>
                         <div className="p-3 bg-gray-100 text-xs font-bold uppercase text-gray-500">Categories</div>
-                        {categories.slice(0, 8).map((cat: any) => (
+                        {categories.slice(0, 15).map((cat: any) => (
                             <Link
                                 key={cat.id}
                                 href={`/?category=${cat.id}`}
