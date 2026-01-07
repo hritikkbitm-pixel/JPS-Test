@@ -13,7 +13,7 @@ let articlesStore = [];
 let lastRefreshTime = null;
 
 // --- Auto-Refresh Configuration ---
-const REFRESH_INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours
+const REFRESH_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
 // Internal refresh function (reusable)
 async function doRefresh() {
@@ -31,7 +31,10 @@ async function doRefresh() {
             { id: 'techpowerup', name: 'TechPowerUp', rssUrl: 'https://www.techpowerup.com/rss/news' },
             { id: 'wccftech', name: 'Wccftech', rssUrl: 'https://wccftech.com/feed/' },
             { id: 'notebookcheck', name: 'NotebookCheck', rssUrl: 'https://www.notebookcheck.net/News.152.100.html' },
-            { id: 'guru3d', name: 'Guru3D', rssUrl: 'https://www.guru3d.com/news/feed' }
+            { id: 'guru3d', name: 'Guru3D', rssUrl: 'https://www.guru3d.com/news/feed' },
+            { id: 'cnet', name: 'CNET', rssUrl: 'https://www.cnet.com/rss/news/' },
+            { id: 'verge', name: 'The Verge', rssUrl: 'https://www.theverge.com/rss/index.xml' },
+            { id: 'mint', name: 'LiveMint Tech', rssUrl: 'https://www.livemint.com/rss/technology' }
         ];
 
         const allArticles = [];
@@ -158,7 +161,10 @@ router.post('/refresh', async (req, res) => {
             { id: 'techpowerup', name: 'TechPowerUp', rssUrl: 'https://www.techpowerup.com/rss/news' },
             { id: 'wccftech', name: 'Wccftech', rssUrl: 'https://wccftech.com/feed/' },
             { id: 'notebookcheck', name: 'NotebookCheck', rssUrl: 'https://www.notebookcheck.net/News.152.100.html' },
-            { id: 'guru3d', name: 'Guru3D', rssUrl: 'https://www.guru3d.com/news/feed' }
+            { id: 'guru3d', name: 'Guru3D', rssUrl: 'https://www.guru3d.com/news/feed' },
+            { id: 'cnet', name: 'CNET', rssUrl: 'https://www.cnet.com/rss/news/' },
+            { id: 'verge', name: 'The Verge', rssUrl: 'https://www.theverge.com/rss/index.xml' },
+            { id: 'mint', name: 'LiveMint Tech', rssUrl: 'https://www.livemint.com/rss/technology' }
         ];
 
         const allArticles = [];

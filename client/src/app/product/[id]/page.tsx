@@ -43,9 +43,39 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         notFound();
     }
 
+    // JSON-LD Product Schema for SEO Rich Results
+    const productSchema = {
+        '@context': 'https://schema.org/',
+        '@type': 'Product',
+        name: product.name,
+        description: `Buy ${product.name} from ${product.brand} at best price.`,
+        brand: {
+            '@type': 'Brand',
+            name: product.brand || 'JPS Enterprises'
+        },
+        offers: {
+            '@type': 'Offer',
+            priceCurrency: 'INR',
+            price: product.price,
+            availability: 'https://schema.org/InStock',
+            seller: {
+                '@type': 'Organization',
+                name: 'JPS Enterprises'
+            }
+        },
+        image: product.image,
+        category: product.category
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
-            <UniversalProductView product={product} />
-        </div>
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+            />
+            <div className="min-h-screen bg-gray-50 pb-20">
+                <UniversalProductView product={product} />
+            </div>
+        </>
     );
 }

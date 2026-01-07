@@ -24,6 +24,10 @@ interface NewsResponse {
     totalPages: number;
 }
 
+interface HardwareNewsProps {
+    initialData?: NewsResponse;
+}
+
 // --- Helper Functions ---
 
 function timeAgo(dateStr: string): string {
@@ -100,14 +104,18 @@ function NewsCard({ article }: { article: NewsArticle }) {
 
 // --- Main Component ---
 
-export default function HardwareNews() {
-    const [articles, setArticles] = useState<NewsArticle[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function HardwareNews({ initialData }: HardwareNewsProps) {
+    const [articles, setArticles] = useState<NewsArticle[]>(initialData?.items || []);
+    const [loading, setLoading] = useState(!initialData);
     const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [page, setPage] = useState(initialData?.page || 1);
+    const [totalPages, setTotalPages] = useState(initialData?.totalPages || 1);
 
     useEffect(() => {
+        // Skip fetch on initial load if we have initialData
+        if (initialData && page === 1) {
+            return;
+        }
         fetchNews();
     }, [page]);
 

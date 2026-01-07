@@ -53,6 +53,27 @@ export const rssSources: RSSSource[] = [
         rssUrl: 'https://videocardz.com/feed',
         enabled: true,
         tags: ['leaks', 'gpus', 'rumors']
+    },
+    {
+        id: 'cnet',
+        name: 'CNET',
+        rssUrl: 'https://www.cnet.com/rss/news/',
+        enabled: true,
+        tags: ['tech', 'news', 'reviews', 'general']
+    },
+    {
+        id: 'verge',
+        name: 'The Verge',
+        rssUrl: 'https://www.theverge.com/rss/index.xml',
+        enabled: true,
+        tags: ['tech', 'culture', 'science']
+    },
+    {
+        id: 'mint',
+        name: 'LiveMint Tech',
+        rssUrl: 'https://www.livemint.com/rss/technology',
+        enabled: true,
+        tags: ['tech', 'business', 'india']
     }
 ];
 
