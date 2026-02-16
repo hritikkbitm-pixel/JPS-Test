@@ -91,6 +91,18 @@ const nextConfig: NextConfig = {
   // Disable X-Powered-By header
   poweredByHeader: false,
 
+  // Redirect Netlify subdomain to custom domain
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'playful-taffy-c0da45.netlify.app' }],
+        destination: 'https://jpsenterprises.in/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
 
   // Security Headers
   async headers() {
