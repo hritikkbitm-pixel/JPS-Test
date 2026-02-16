@@ -1,14 +1,17 @@
 import { MetadataRoute } from 'next';
-import { API_URL } from '@/config';
+
+// Force runtime generation — never statically build this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache for 1 hour at runtime via ISR
 
 /**
  * Dynamic Sitemap Generator for JPS Enterprises
  * 
  * This generates a sitemap that includes:
  * - Static pages (homepage, news, about, contact, policies)
- * - Dynamic product pages (fetched from API)
+ * - Dynamic product pages (fetched from API at runtime)
  * 
- * The sitemap is revalidated by Next.js ISR, so it stays fresh.
+ * Using force-dynamic to avoid build-time fetch timeouts on Netlify.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://jpsenterprises.in';
@@ -25,14 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${baseUrl}/terms`, lastModified: new Date(), priority: 0.3, changeFrequency: 'yearly' },
     ];
 
-    // Dynamic product pages
+    // Dynamic product pages — fetched at runtime only
     let productPages: MetadataRoute.Sitemap = [];
     try {
-        // Use production API directly for sitemap generation (build-time)
-        const sitemapApiUrl = process.env.SITEMAP_API_URL || process.env.NEXT_PUBLIC_API_URL || API_URL;
-        const res = await fetch(`${sitemapApiUrl}/products?limit=1000`, {
-            next: { revalidate: 3600 }, // Cache for 1 hour
-            signal: AbortSignal.timeout(15000), // 15s timeout to avoid build hangs
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jps-test.onrender.com/api';
+        const res = await fetch(`${apiUrl}/products?limit=1000`, {
+            signal: AbortSignal.timeout(10000),
         });
 
         if (res.ok) {
@@ -47,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             }));
         }
     } catch (error) {
-        console.error('Sitemap: Failed to fetch products for sitemap', error);
+        console.error('Sitemap: Failed to fetch products, returning static pages only', error);
     }
 
     return [...staticPages, ...productPages];
