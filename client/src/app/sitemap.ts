@@ -28,8 +28,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Dynamic product pages
     let productPages: MetadataRoute.Sitemap = [];
     try {
-        const res = await fetch(`${API_URL}/products?limit=1000`, {
-            next: { revalidate: 3600 } // Cache for 1 hour
+        // Use production API directly for sitemap generation (build-time)
+        const sitemapApiUrl = process.env.SITEMAP_API_URL || process.env.NEXT_PUBLIC_API_URL || API_URL;
+        const res = await fetch(`${sitemapApiUrl}/products?limit=1000`, {
+            next: { revalidate: 3600 }, // Cache for 1 hour
+            signal: AbortSignal.timeout(15000), // 15s timeout to avoid build hangs
         });
 
         if (res.ok) {
