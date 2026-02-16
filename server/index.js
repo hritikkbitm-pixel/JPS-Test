@@ -4,7 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -101,6 +101,7 @@ app.use('/api/campaigns', require('./routes/campaigns'));
 app.use('/api/offer-tiles', require('./routes/offer-tiles'));
 app.use('/api/siteinfo', require('./routes/siteinfo'));
 app.use('/api/news', require('./routes/news'));
+app.use('/api/quotations', require('./routes/quotations'));
 
 app.get('/api', (req, res) => {
     res.json({ message: 'JPS API is operational', version: '1.0' });
