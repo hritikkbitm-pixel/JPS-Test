@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 // Update site info (admin only)
 router.put('/', async (req, res) => {
     try {
-        const { bannerEnabled, bannerText, popupEnabled, popupTitle, popupContent } = req.body;
+        const { bannerEnabled, bannerText, popupEnabled, popupTitle, popupContent, buyingEnabled } = req.body;
 
         let info = await SiteInfo.findOne();
         if (!info) {
@@ -28,6 +28,7 @@ router.put('/', async (req, res) => {
         if (popupEnabled !== undefined) info.popupEnabled = popupEnabled;
         if (popupTitle !== undefined) info.popupTitle = popupTitle;
         if (popupContent !== undefined) info.popupContent = popupContent;
+        if (buyingEnabled !== undefined) info.buyingEnabled = buyingEnabled;
 
         info.updatedAt = new Date();
         await info.save();

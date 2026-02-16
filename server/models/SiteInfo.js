@@ -10,6 +10,9 @@ const SiteInfoSchema = new mongoose.Schema({
     popupTitle: { type: String, default: '' },
     popupContent: { type: String, default: '' },
 
+    // Buying toggle — when false, shows "Call for Quotation" instead of buy buttons
+    buyingEnabled: { type: Boolean, default: true },
+
     // Meta
     updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
@@ -23,7 +26,8 @@ SiteInfoSchema.statics.getSiteInfo = async function () {
             bannerText: '⚠️ Prices of RAM, GPU & Storage may change post-order due to market volatility. Any price increase will require payment of the difference before processing.',
             popupEnabled: true,
             popupTitle: '⚠️ Important Pricing Disclaimer',
-            popupContent: 'Due to frequent fluctuations in the global components market, prices of RAM, GPU, and Storage devices may vary after order placement.\n\nIf there is a price increase at the time of order verification, the revised difference must be paid to proceed with processing. Orders will be confirmed only after final price approval.\n\nOur commitment remains to provide the latest market prices with complete transparency.'
+            popupContent: 'Due to frequent fluctuations in the global components market, prices of RAM, GPU, and Storage devices may vary after order placement.\n\nIf there is a price increase at the time of order verification, the revised difference must be paid to proceed with processing. Orders will be confirmed only after final price approval.\n\nOur commitment remains to provide the latest market prices with complete transparency.',
+            buyingEnabled: true
         });
     }
     return info;

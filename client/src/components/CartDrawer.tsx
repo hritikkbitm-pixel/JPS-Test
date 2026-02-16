@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import { useShop } from '../context/ShopContext';
 
 export default function CartDrawer() {
     const { isCartOpen, toggleCart, cart, removeFromCart, cartTotal, updateQuantity } = useCart();
+    const { buyingEnabled } = useShop();
 
     return (
         <div id="cart-modal" className={`fixed inset-0 z-[100] transition-opacity duration-300 ${isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -55,10 +57,20 @@ export default function CartDrawer() {
                         <span>Total</span>
                         <span id="cart-total" className="text-brand-red">₹{cartTotal.toLocaleString()}</span>
                     </div>
-                    <a href="/cart" onClick={toggleCart}
-                        className="block w-full bg-brand-red hover:bg-red-700 text-white font-bold py-4 rounded shadow-lg transition transform hover:-translate-y-1 uppercase tracking-widest text-sm text-center">
-                        Proceed to Checkout
-                    </a>
+                    {buyingEnabled ? (
+                        <a href="/cart" onClick={toggleCart}
+                            className="block w-full bg-brand-red hover:bg-red-700 text-white font-bold py-4 rounded shadow-lg transition transform hover:-translate-y-1 uppercase tracking-widest text-sm text-center">
+                            Proceed to Checkout
+                        </a>
+                    ) : (
+                        <div className="text-center">
+                            <div className="text-sm text-gray-500 mb-3">Online buying is currently disabled</div>
+                            <a href="tel:9415409650"
+                                className="block w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-4 rounded shadow-lg transition transform hover:-translate-y-1 uppercase tracking-widest text-sm text-center">
+                                <i className="fas fa-phone-alt mr-2"></i>Call for Quotation
+                            </a>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

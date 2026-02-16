@@ -9,6 +9,7 @@ interface SiteInfo {
     popupEnabled: boolean;
     popupTitle: string;
     popupContent: string;
+    buyingEnabled: boolean;
 }
 
 export default function InformationView() {
@@ -17,7 +18,8 @@ export default function InformationView() {
         bannerText: '',
         popupEnabled: true,
         popupTitle: '',
-        popupContent: ''
+        popupContent: '',
+        buyingEnabled: true
     });
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
@@ -182,6 +184,38 @@ export default function InformationView() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Buying Toggle Section */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-800">Product Buying</h3>
+                        <p className="text-sm text-gray-500">When disabled, all &quot;Add to Cart&quot; buttons show &quot;Call for Quotation&quot; instead</p>
+                    </div>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                        <span className="text-sm font-medium text-gray-600">
+                            {info.buyingEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                checked={info.buyingEnabled}
+                                onChange={(e) => setInfo({ ...info, buyingEnabled: e.target.checked })}
+                                className="sr-only"
+                            />
+                            <div className={`w-14 h-7 rounded-full transition ${info.buyingEnabled ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                            <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${info.buyingEnabled ? 'translate-x-7' : ''}`}></div>
+                        </div>
+                    </label>
+                </div>
+
+                {!info.buyingEnabled && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-sm text-yellow-800">
+                        <i className="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Buying is disabled.</strong> Customers will see &quot;Call for Quotation&quot; on all products. Custom quotation payments will still work.
                     </div>
                 )}
             </div>

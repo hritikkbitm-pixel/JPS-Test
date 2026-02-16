@@ -24,7 +24,7 @@ const STEPS = [
 export default function PCBuilder() {
     const { selectedParts, setPart, removePart, addStorage, removeStorage, currentStep, setStep, resetBuild } = useBuildStore();
     const { addToCart } = useCart();
-    const { products } = useShop();
+    const { products, buyingEnabled } = useShop();
     const isMounted = useIsMounted();
 
     // Map Product (nested specs) to Part (flat structure)
@@ -304,13 +304,22 @@ export default function PCBuilder() {
                     })}
                 </div>
 
-                <button
-                    onClick={handleAddToCart}
-                    className="mt-6 w-full bg-brand-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition uppercase tracking-wider shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!health.valid || Object.keys(selectedParts).length === 0}
-                >
-                    <ShoppingCart className="w-5 h-5" /> Add to Cart
-                </button>
+                {buyingEnabled ? (
+                    <button
+                        onClick={handleAddToCart}
+                        className="mt-6 w-full bg-brand-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition uppercase tracking-wider shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!health.valid || Object.keys(selectedParts).length === 0}
+                    >
+                        <ShoppingCart className="w-5 h-5" /> Add to Cart
+                    </button>
+                ) : (
+                    <a
+                        href="tel:9415409650"
+                        className="mt-6 w-full bg-yellow-400 text-gray-900 font-bold py-4 rounded-lg hover:bg-yellow-500 transition uppercase tracking-wider shadow-md flex items-center justify-center gap-2"
+                    >
+                        <i className="fas fa-phone-alt"></i> Call for Quotation
+                    </a>
+                )}
             </div>
 
             {/* RIGHT PANEL: Selection Area */}
@@ -485,13 +494,22 @@ export default function PCBuilder() {
                         </div>
 
                         <div className="p-4 border-t bg-white">
-                            <button
-                                onClick={handleAddToCart}
-                                disabled={!health.valid || Object.keys(selectedParts).length === 0}
-                                className="w-full bg-brand-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition uppercase tracking-wider shadow-md disabled:opacity-50"
-                            >
-                                Add to Cart (₹{totalPrice.toLocaleString()})
-                            </button>
+                            {buyingEnabled ? (
+                                <button
+                                    onClick={handleAddToCart}
+                                    disabled={!health.valid || Object.keys(selectedParts).length === 0}
+                                    className="w-full bg-brand-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition uppercase tracking-wider shadow-md disabled:opacity-50"
+                                >
+                                    Add to Cart (₹{totalPrice.toLocaleString()})
+                                </button>
+                            ) : (
+                                <a
+                                    href="tel:9415409650"
+                                    className="block w-full bg-yellow-400 text-gray-900 font-bold py-4 rounded-lg hover:bg-yellow-500 transition uppercase tracking-wider shadow-md text-center"
+                                >
+                                    <i className="fas fa-phone-alt"></i> Call for Quotation
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>

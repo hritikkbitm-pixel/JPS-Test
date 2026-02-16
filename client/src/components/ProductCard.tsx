@@ -3,6 +3,7 @@
 import React, { useCallback } from 'react';
 import Image from 'next/image';
 import { useCart } from '../context/CartContext';
+import { useShop } from '../context/ShopContext';
 import { Product } from '@/lib/data';
 import { useHoverPrefetch, prefetchProduct } from '@/hooks/usePrefetch';
 
@@ -14,6 +15,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
     const { addToCart } = useCart();
+    const { buyingEnabled } = useShop();
     const isAvailable = product.available !== false;
     const hasDiscount = product.mrp && product.mrp > product.price;
     const discountPercentage = hasDiscount ? Math.ceil(((product.mrp! - product.price) / product.mrp!) * 100) : 0;
@@ -77,9 +79,15 @@ export default function ProductCard({ product }: ProductCardProps) {
                         )}
                     </div>
                     {isAvailable ? (
-                        <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="add-btn w-full bg-gray-100 text-gray-800 font-bold py-2 rounded text-xs uppercase tracking-wider hover:shadow-md transition flex items-center justify-center gap-2">
-                            <i className="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
+                        buyingEnabled ? (
+                            <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="add-btn w-full bg-gray-100 text-gray-800 font-bold py-2 rounded text-xs uppercase tracking-wider hover:shadow-md transition flex items-center justify-center gap-2">
+                                <i className="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                        ) : (
+                            <a href="tel:9415409650" className="add-btn w-full bg-yellow-400 text-gray-900 font-bold py-2 rounded text-xs uppercase tracking-wider hover:bg-yellow-500 hover:shadow-md transition flex items-center justify-center gap-2">
+                                <i className="fas fa-phone-alt"></i> Call for Quotation
+                            </a>
+                        )
                     ) : (
                         <button disabled className="w-full bg-gray-200 text-gray-400 font-bold py-2 rounded text-xs uppercase tracking-wider cursor-not-allowed">
                             Unavailable

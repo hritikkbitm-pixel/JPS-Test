@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '@/lib/data';
 import { useCart } from '@/context/CartContext';
+import { useShop } from '@/context/ShopContext';
 
 interface ProductHeroProps {
     product: Product;
@@ -8,6 +9,7 @@ interface ProductHeroProps {
 
 export default function ProductHero({ product }: ProductHeroProps) {
     const { addToCart } = useCart();
+    const { buyingEnabled } = useShop();
     const [activeImage, setActiveImage] = useState(product.image);
 
     // Collect all unique images
@@ -95,13 +97,22 @@ export default function ProductHero({ product }: ProductHeroProps) {
                         </div>
 
                         <div className="flex gap-4">
-                            <button
-                                onClick={() => addToCart(product as any)}
-                                disabled={!product.available}
-                                className="flex-1 bg-brand-red text-white py-4 rounded-lg font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                <i className="fas fa-shopping-cart"></i> Add to Cart
-                            </button>
+                            {buyingEnabled ? (
+                                <button
+                                    onClick={() => addToCart(product as any)}
+                                    disabled={!product.available}
+                                    className="flex-1 bg-brand-red text-white py-4 rounded-lg font-bold uppercase tracking-wider hover:bg-red-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    <i className="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
+                            ) : (
+                                <a
+                                    href="tel:9415409650"
+                                    className="flex-1 bg-yellow-400 text-gray-900 py-4 rounded-lg font-bold uppercase tracking-wider hover:bg-yellow-500 transition shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <i className="fas fa-phone-alt"></i> Call for Quotation
+                                </a>
+                            )}
                             <button className="flex-none w-14 flex items-center justify-center border-2 border-gray-200 rounded-lg text-gray-400 hover:text-red-500 hover:border-red-200 transition">
                                 <i className="far fa-heart"></i>
                             </button>

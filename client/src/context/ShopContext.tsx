@@ -25,6 +25,7 @@ interface ShopContextType {
     toggleFeatured: (productId: string) => void;
     refreshOrders: () => Promise<void>;
     isLoading: boolean;
+    buyingEnabled: boolean;
 }
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
@@ -36,6 +37,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     const [categories, setCategories] = useState<Category[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
+    const [buyingEnabled, setBuyingEnabled] = useState(true);
 
 
     // Helper to ensure banners have IDs
@@ -64,10 +66,11 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
             try {
                 // Parallel fetch - all requests start at the same time
-                const [productsRes, bannersRes, categoriesRes] = await Promise.all([
+                const [productsRes, bannersRes, categoriesRes, siteInfoRes] = await Promise.all([
                     fetch(`${API_URL}/products`).catch(() => null),
                     fetch(`${API_URL}/banners`).catch(() => null),
                     fetch(`${API_URL}/categories`).catch(() => null),
+                    fetch(`${API_URL}/siteinfo`).catch(() => null),
                 ]);
 
                 // Process products
@@ -98,6 +101,12 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
                 } else {
                     const savedCategories = localStorage.getItem('shop_categories');
                     setCategories(savedCategories ? JSON.parse(savedCategories) : initialCategories);
+                }
+
+                // Process site info (buying toggle)
+                if (siteInfoRes?.ok) {
+                    const siteData = await siteInfoRes.json();
+                    setBuyingEnabled(siteData.buyingEnabled !== false);
                 }
 
             } catch (error) {
@@ -333,8 +342,9 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
         addOrderMessage,
         toggleFeatured,
         refreshOrders,
-        isLoading
-    }), [products, orders, banners, categories, isLoading]);
+        isLoading,
+        buyingEnabled
+    }), [products, orders, banners, categories, isLoading, buyingEnabled]);
 
     return (
         <ShopContext.Provider value={value}>
