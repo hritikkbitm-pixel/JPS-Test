@@ -37,7 +37,9 @@ const OrderSchema = new mongoose.Schema({
         date: String,
         sender: String
     }],
-    invoice: { type: String } // Base64 PDF
+    invoice: { type: String }, // Base64 PDF
+    fromQuotation: { type: Boolean, default: false },
+    quotationToken: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);

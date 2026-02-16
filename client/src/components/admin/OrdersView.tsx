@@ -185,6 +185,25 @@ export default function OrdersView() {
                                 )}
                             </div>
 
+                            <div className="mb-6 bg-gray-50 p-4 rounded border border-gray-200">
+                                <h4 className="font-bold text-xs uppercase text-gray-700 mb-2 tracking-wider">Payment Details</h4>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-bold text-gray-800">{selectedOrder.paymentMethod || 'Cash on Delivery'}</span>
+                                    <span className={`text-xs font-bold px-2 py-1 rounded uppercase ${selectedOrder.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                                            selectedOrder.status === 'Pending Payment' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-green-100 text-green-800'
+                                        }`}>
+                                        {selectedOrder.status === 'Pending Payment' ? 'Unpaid' : selectedOrder.status === 'Cancelled' ? 'Cancelled' : 'Paid'}
+                                    </span>
+                                </div>
+                                {selectedOrder.fromQuotation && (
+                                    <div className="mt-2 text-xs text-blue-600 font-bold flex items-center gap-1">
+                                        <i className="fas fa-file-invoice"></i>
+                                        Created from Quotation
+                                    </div>
+                                )}
+                            </div>
+
                             <h4 className="font-bold text-lg mb-4 border-b pb-2">Items Ordered</h4>
                             <div className="space-y-4 mb-8">
                                 {selectedOrder.items.map((item: any, idx: number) => (

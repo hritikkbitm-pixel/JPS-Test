@@ -83,6 +83,9 @@ export interface Order {
     shippingAddress: ShippingAddress;
     messages: OrderMessage[];
     invoice: string;
+    paymentMethod?: string;
+    fromQuotation?: boolean;
+    quotationToken?: string;
 }
 
 export interface Banner {

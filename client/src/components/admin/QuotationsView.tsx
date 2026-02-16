@@ -271,6 +271,148 @@ export default function QuotationsView() {
         );
     };
 
+    // ─── Export PDF ───
+    const generatePDF = (q: Quotation) => {
+        const dateStr = new Date(q.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        const expiryStr = q.expiresAt ? new Date(q.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+
+        const itemRows = q.items.map((item, i) => `
+            <tr style="${i % 2 === 0 ? 'background:#FAFAFA;' : ''}">
+                <td style="padding:14px 20px;font-size:13px;color:#1d1d1f;border-bottom:1px solid #f0f0f0;">
+                    <div style="font-weight:600;letter-spacing:-0.01em;">${item.name}</div>
+                    <div style="font-size:11px;color:#86868b;margin-top:3px;">${item.brand || ''}${item.category ? ' · ' + item.category : ''}${item.isCustom ? ' · Custom' : ''}</div>
+                </td>
+                <td style="padding:14px 20px;text-align:center;font-size:13px;color:#1d1d1f;border-bottom:1px solid #f0f0f0;font-weight:500;">${item.quantity}</td>
+                <td style="padding:14px 20px;text-align:right;font-size:13px;color:#1d1d1f;border-bottom:1px solid #f0f0f0;">₹${item.price.toLocaleString('en-IN')}</td>
+                <td style="padding:14px 20px;text-align:right;font-size:13px;color:#1d1d1f;border-bottom:1px solid #f0f0f0;font-weight:600;">₹${(item.price * item.quantity).toLocaleString('en-IN')}</td>
+            </tr>
+        `).join('');
+
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation — JPS Enterprises</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: #1d1d1f; background: #fff; -webkit-font-smoothing: antialiased; }
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+        @page { size: A4; margin: 0; }
+    </style>
+</head>
+<body>
+    <div style="max-width:800px;margin:0 auto;padding:48px 56px;">
+
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;padding-bottom:28px;border-bottom:2px solid #1d1d1f;">
+            <div>
+                <div style="font-size:28px;font-weight:900;letter-spacing:-0.03em;color:#1d1d1f;">JPS <span style="color:#e11d48;">ENTERPRISES</span></div>
+                <div style="font-size:11px;letter-spacing:0.08em;color:#86868b;text-transform:uppercase;margin-top:4px;">Technology & Computer Solutions</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;color:#1d1d1f;">QUOTATION</div>
+                <div style="font-size:11px;color:#86868b;margin-top:4px;">${dateStr}</div>
+                <div style="font-size:10px;font-family:monospace;color:#86868b;margin-top:2px;">REF: ${q.token.substring(0, 8).toUpperCase()}</div>
+            </div>
+        </div>
+
+        <!-- Customer Info -->
+        ${q.customerName || q.customerEmail || q.customerPhone ? `
+        <div style="display:flex;gap:40px;margin-bottom:40px;">
+            <div style="flex:1;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;margin-bottom:8px;">Prepared For</div>
+                ${q.customerName ? `<div style="font-size:16px;font-weight:700;color:#1d1d1f;letter-spacing:-0.01em;">${q.customerName}</div>` : ''}
+                ${q.customerEmail ? `<div style="font-size:13px;color:#424245;margin-top:4px;">${q.customerEmail}</div>` : ''}
+                ${q.customerPhone ? `<div style="font-size:13px;color:#424245;margin-top:2px;">${q.customerPhone}</div>` : ''}
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;margin-bottom:8px;">From</div>
+                <div style="font-size:13px;color:#424245;line-height:1.6;">JPS Enterprises<br>Prayagraj, Uttar Pradesh<br>Phone: 9415409650</div>
+            </div>
+        </div>` : ''}
+
+        <!-- Items Table -->
+        <table style="width:100%;border-collapse:collapse;margin-bottom:0;">
+            <thead>
+                <tr style="border-bottom:2px solid #1d1d1f;">
+                    <th style="padding:12px 20px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Item</th>
+                    <th style="padding:12px 20px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;width:80px;">Qty</th>
+                    <th style="padding:12px 20px;text-align:right;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;width:120px;">Unit Price</th>
+                    <th style="padding:12px 20px;text-align:right;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;width:120px;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${itemRows}
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div style="border-top:2px solid #1d1d1f;padding-top:20px;margin-top:0;margin-bottom:40px;">
+            <div style="display:flex;justify-content:flex-end;">
+                <div style="width:280px;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;">
+                        <span style="font-size:12px;color:#86868b;text-transform:uppercase;letter-spacing:0.05em;">Subtotal</span>
+                        <span style="font-size:14px;font-weight:600;color:#1d1d1f;">₹${q.total.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0;margin-top:8px;border-top:1px solid #e0e0e0;">
+                        <span style="font-size:14px;font-weight:800;color:#1d1d1f;text-transform:uppercase;letter-spacing:0.03em;">Total</span>
+                        <span style="font-size:24px;font-weight:900;color:#e11d48;letter-spacing:-0.02em;">₹${q.total.toLocaleString('en-IN')}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        ${q.notes ? `
+        <div style="background:#f5f5f7;border-radius:12px;padding:20px 24px;margin-bottom:40px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;margin-bottom:8px;">Notes</div>
+            <div style="font-size:13px;color:#424245;line-height:1.7;">${q.notes}</div>
+        </div>` : ''}
+
+        <!-- Validity -->
+        ${expiryStr ? `
+        <div style="text-align:center;margin-bottom:40px;">
+            <div style="display:inline-block;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px 24px;">
+                <span style="font-size:12px;color:#9A3412;font-weight:600;">⏱ This quotation is valid until ${expiryStr}</span>
+            </div>
+        </div>` : ''}
+
+        <!-- Footer -->
+        <div style="border-top:1px solid #e0e0e0;padding-top:24px;margin-top:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                    <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;margin-bottom:6px;">Terms & Conditions</div>
+                    <div style="font-size:11px;color:#86868b;line-height:1.8;max-width:400px;">Prices are subject to change without prior notice. All prices are inclusive of applicable taxes unless stated otherwise. Payment is due upon acceptance of this quotation.</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:16px;font-weight:900;letter-spacing:-0.02em;color:#1d1d1f;">JPS <span style="color:#e11d48;">ENTERPRISES</span></div>
+                    <div style="font-size:11px;color:#86868b;margin-top:4px;">jpsenterprises.in</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Auto Print Button -->
+    <div class="no-print" style="position:fixed;bottom:32px;right:32px;display:flex;gap:12px;">
+        <button onclick="window.print()" style="background:#1d1d1f;color:#fff;border:none;padding:14px 32px;border-radius:12px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:-0.01em;box-shadow:0 4px 20px rgba(0,0,0,0.15);">Save as PDF</button>
+    </div>
+    <script>window.onload=function(){setTimeout(function(){window.print()},600)}<\/script>
+</body>
+</html>`;
+
+        const win = window.open('', '_blank');
+        if (win) {
+            win.document.write(html);
+            win.document.close();
+        }
+    };
+
     // ─── Created Success View ───
     if (createdQuotation) {
         const link = getLink(createdQuotation.token);
@@ -319,7 +461,7 @@ export default function QuotationsView() {
                         />
                     </div>
 
-                    {/* WhatsApp Share */}
+                    {/* WhatsApp Share & Export PDF */}
                     <div className="flex gap-3 justify-center mb-6">
                         <a
                             href={`https://wa.me/${createdQuotation.customerPhone ? createdQuotation.customerPhone.replace(/\D/g, '') : ''}?text=${encodeURIComponent(`Hi ${createdQuotation.customerName},\n\nYour quotation from JPS Enterprises is ready!\n\nTotal: ₹${createdQuotation.total.toLocaleString()}\n\nPay here: ${link}\n\nThis link is valid for one-time use only.`)}`}
@@ -328,6 +470,12 @@ export default function QuotationsView() {
                         >
                             <i className="fab fa-whatsapp text-lg"></i> Share via WhatsApp
                         </a>
+                        <button
+                            onClick={() => generatePDF(createdQuotation)}
+                            className="bg-gray-800 text-white px-6 py-3 rounded-lg font-bold text-sm uppercase hover:bg-brand-red transition flex items-center gap-2"
+                        >
+                            <i className="fas fa-file-pdf"></i> Export PDF
+                        </button>
                     </div>
 
                     <div className="flex gap-3 justify-center">
@@ -691,6 +839,9 @@ export default function QuotationsView() {
 
                                 {/* Actions */}
                                 <div className="flex flex-wrap gap-3">
+                                    <button onClick={() => generatePDF(selectedQuotation)} className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-brand-red transition flex items-center gap-2">
+                                        <i className="fas fa-file-pdf"></i> Export PDF
+                                    </button>
                                     {selectedQuotation.status === 'sent' && (
                                         <>
                                             <button onClick={() => copyLink(selectedQuotation.token)} className="bg-black text-white px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-brand-red transition flex items-center gap-2">

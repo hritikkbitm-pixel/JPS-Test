@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Quotation = require('../models/Quotation');
+const Order = require('../models/Order');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
@@ -224,6 +225,56 @@ router.post('/pay/:token/complete', async (req, res) => {
         q.status = 'paid';
         q.paymentDetails = { razorpay_order_id, razorpay_payment_id, razorpay_signature };
         await q.save();
+
+        // ─── Create Order from Quotation ───
+        try {
+            const newOrder = new Order({
+                id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                email: q.customerEmail || 'guest@jps.com',
+                date: new Date().toLocaleString('en-IN'),
+                items: q.items.map(item => ({
+                    id: item.productId || `custom-${Date.now()}`,
+                    name: item.name,
+                    category: item.category || 'Custom',
+                    price: item.price,
+                    brand: item.brand || 'Custom',
+                    image: item.image || '',
+                    specs: {},
+                    stock: item.quantity, // Mapping quantity to stock as per existing logic
+                    sold: 0,
+                    available: true,
+                    unavailable: false
+                })),
+                total: q.total,
+                status: 'Processing',
+                shippingAddress: {
+                    fullName: q.customerName,
+                    label: 'Home',
+                    line1: 'Quotation Order',
+                    line2: '',
+                    city: 'Prayagraj', // Default to local for now
+                    zip: '',
+                    state: 'Uttar Pradesh',
+                    phone: q.customerPhone
+                },
+                paymentMethod: 'Online (Razorpay - Quotation)',
+                isGuestOrder: true,
+                whatsappNumber: q.customerPhone,
+                messages: [{
+                    text: `Order created from Paid Quotation #${q.token.substring(0, 8)}`,
+                    date: new Date().toLocaleString('en-IN'),
+                    sender: 'System'
+                }],
+                fromQuotation: true,
+                quotationToken: q.token
+            });
+
+            await newOrder.save();
+            console.log(`Order created for quotation ${q.token}`);
+        } catch (orderErr) {
+            console.error('Failed to auto-create order for quotation:', orderErr);
+            // We don't fail the request here, just log the error as payment is already verified
+        }
 
         res.json({ success: true, message: 'Payment verified and quotation marked as paid' });
     } catch (err) {
