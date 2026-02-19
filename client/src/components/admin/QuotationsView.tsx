@@ -434,7 +434,7 @@ export default function QuotationsView() {
             </div>
             <div style="text-align:right;">
                 <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;margin-bottom:8px;">From</div>
-                <div style="font-size:13px;color:#424245;line-height:1.6;">JPS Enterprises<br>Prayagraj, Uttar Pradesh<br>Phone: 9415409650</div>
+                <div style="font-size:13px;color:#424245;line-height:1.6;">JPS Enterprises<br>Shop 7 & 11, UGF Shree Chambers<br>Naza Market, Lalbagh<br>Lucknow, Uttar Pradesh 226001<br>Phone: 9415409650</div>
             </div>
         </div>` : ''}
 
