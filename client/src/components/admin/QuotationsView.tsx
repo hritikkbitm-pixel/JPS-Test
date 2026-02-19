@@ -16,6 +16,19 @@ interface QuotationItem {
     isCustom: boolean;
 }
 
+interface CustomerAddress {
+    street: string;
+    city: string;
+    state: string;
+    pinCode: string;
+}
+
+interface EditLog {
+    editedAt: string;
+    editedBy: string;
+    changes: string;
+}
+
 interface Quotation {
     _id: string;
     token: string;
@@ -23,12 +36,16 @@ interface Quotation {
     customerName: string;
     customerEmail: string;
     customerPhone: string;
+    customerAddress?: CustomerAddress;
     notes: string;
     total: number;
     status: string;
     expiresAt?: string;
     createdBy: string;
     createdAt: string;
+    editHistory?: EditLog[];
+    gstEnabled?: boolean;
+    gstin?: string;
 }
 
 // ─── Simple QR Code Generator (no external dependency) ───
@@ -62,6 +79,16 @@ export default function QuotationsView() {
     const [notes, setNotes] = useState('');
     const [expiryDays, setExpiryDays] = useState('7');
 
+    // Address
+    const [addressStreet, setAddressStreet] = useState('');
+    const [addressCity, setAddressCity] = useState('');
+    const [addressState, setAddressState] = useState('');
+    const [addressPin, setAddressPin] = useState('');
+
+    // GST
+    const [gstEnabled, setGstEnabled] = useState(false);
+    const [gstin, setGstin] = useState('');
+
     // Result
     const [createdQuotation, setCreatedQuotation] = useState<Quotation | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,6 +98,10 @@ export default function QuotationsView() {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
     const [copySuccess, setCopySuccess] = useState('');
+    const [showArchived, setShowArchived] = useState(false);
+
+    // ─── Edit Mode ───
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Close search dropdown on outside click
     useEffect(() => {
@@ -100,7 +131,7 @@ export default function QuotationsView() {
     const fetchQuotations = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch(`${API_URL}/quotations`);
+            const res = await fetch(`${API_URL}/quotations${showArchived ? '?archived=true' : ''}`);
             if (res.ok) {
                 const data = await res.json();
                 setQuotations(data);
@@ -114,7 +145,7 @@ export default function QuotationsView() {
 
     useEffect(() => {
         if (tab === 'list') fetchQuotations();
-    }, [tab]);
+    }, [tab, showArchived]);
 
     // Add catalog product
     const addCatalogProduct = (product: Product) => {
@@ -188,27 +219,49 @@ export default function QuotationsView() {
         setIsSubmitting(true);
         try {
             const expiresAt = expiryDays ? new Date(Date.now() + parseInt(expiryDays) * 86400000).toISOString() : null;
-            const res = await fetch(`${API_URL}/quotations`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    items,
-                    customerName,
-                    customerEmail,
-                    customerPhone,
-                    notes,
-                    expiresAt
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setCreatedQuotation(data);
+            const payload = {
+                items,
+                customerName,
+                customerEmail,
+                customerPhone,
+                customerAddress: { street: addressStreet, city: addressCity, state: addressState, pinCode: addressPin },
+                notes,
+                expiresAt,
+                gstEnabled,
+                gstin: gstEnabled ? gstin : ''
+            };
+
+            if (editingId) {
+                // Update existing
+                const res = await fetch(`${API_URL}/quotations/${editingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...payload, editedBy: 'Admin' })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setCreatedQuotation(data);
+                    setEditingId(null);
+                } else {
+                    alert('Failed to update quotation');
+                }
             } else {
-                alert('Failed to create quotation');
+                // Create new
+                const res = await fetch(`${API_URL}/quotations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setCreatedQuotation(data);
+                } else {
+                    alert('Failed to create quotation');
+                }
             }
         } catch (err) {
             console.error(err);
-            alert('Error creating quotation');
+            alert('Error saving quotation');
         } finally {
             setIsSubmitting(false);
         }
@@ -223,6 +276,54 @@ export default function QuotationsView() {
         setNotes('');
         setExpiryDays('7');
         setCreatedQuotation(null);
+        setAddressStreet('');
+        setAddressCity('');
+        setAddressState('');
+        setAddressPin('');
+        setGstEnabled(false);
+        setGstin('');
+        setEditingId(null);
+    };
+
+    // Start editing a quotation
+    const startEdit = (q: Quotation) => {
+        setItems(q.items);
+        setCustomerName(q.customerName);
+        setCustomerEmail(q.customerEmail);
+        setCustomerPhone(q.customerPhone);
+        setNotes(q.notes);
+        setAddressStreet(q.customerAddress?.street || '');
+        setAddressCity(q.customerAddress?.city || '');
+        setAddressState(q.customerAddress?.state || '');
+        setAddressPin(q.customerAddress?.pinCode || '');
+        setGstEnabled(q.gstEnabled || false);
+        setGstin(q.gstin || '');
+        setExpiryDays('');
+        setEditingId(q._id);
+        setSelectedQuotation(null);
+        setTab('create');
+    };
+
+    // Restore archived quotation
+    const restoreQuotation = async (id: string) => {
+        try {
+            await fetch(`${API_URL}/quotations/${id}/restore`, { method: 'PUT' });
+            fetchQuotations();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    // Permanent delete
+    const permanentDelete = async (id: string) => {
+        if (!confirm('Permanently delete this quotation? This cannot be undone.')) return;
+        try {
+            await fetch(`${API_URL}/quotations/${id}/permanent`, { method: 'DELETE' });
+            fetchQuotations();
+            if (selectedQuotation?._id === id) setSelectedQuotation(null);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     // Get shareable link
@@ -329,11 +430,18 @@ export default function QuotationsView() {
                 ${q.customerName ? `<div style="font-size:16px;font-weight:700;color:#1d1d1f;letter-spacing:-0.01em;">${q.customerName}</div>` : ''}
                 ${q.customerEmail ? `<div style="font-size:13px;color:#424245;margin-top:4px;">${q.customerEmail}</div>` : ''}
                 ${q.customerPhone ? `<div style="font-size:13px;color:#424245;margin-top:2px;">${q.customerPhone}</div>` : ''}
+                ${q.customerAddress && (q.customerAddress.street || q.customerAddress.city) ? `<div style="font-size:13px;color:#424245;margin-top:4px;">${[q.customerAddress.street, q.customerAddress.city, q.customerAddress.state, q.customerAddress.pinCode].filter(Boolean).join(', ')}</div>` : ''}
             </div>
             <div style="text-align:right;">
                 <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;margin-bottom:8px;">From</div>
                 <div style="font-size:13px;color:#424245;line-height:1.6;">JPS Enterprises<br>Prayagraj, Uttar Pradesh<br>Phone: 9415409650</div>
             </div>
+        </div>` : ''}
+
+        ${q.gstEnabled && q.gstin ? `
+        <div style="background:#EFF6FF;border-radius:8px;padding:12px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#1e40af;">GSTIN</div>
+            <div style="font-size:14px;font-weight:600;color:#1e3a5f;font-family:monospace;">${q.gstin}</div>
         </div>` : ''}
 
         <!-- Items Table -->
@@ -727,6 +835,64 @@ export default function QuotationsView() {
                             </div>
                         </div>
 
+                        {/* Address */}
+                        <div className="bg-white rounded-xl shadow p-6">
+                            <h3 className="font-black text-gray-800 uppercase text-sm mb-4 flex items-center gap-2">
+                                <i className="fas fa-map-marker-alt text-brand-red"></i> Shipping Address
+                            </h3>
+                            <div className="space-y-3">
+                                <input
+                                    placeholder="Street / Locality"
+                                    value={addressStreet}
+                                    onChange={e => setAddressStreet(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-red outline-none"
+                                />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <input
+                                        placeholder="City"
+                                        value={addressCity}
+                                        onChange={e => setAddressCity(e.target.value)}
+                                        className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-red outline-none"
+                                    />
+                                    <input
+                                        placeholder="State"
+                                        value={addressState}
+                                        onChange={e => setAddressState(e.target.value)}
+                                        className="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-red outline-none"
+                                    />
+                                </div>
+                                <input
+                                    placeholder="PIN Code"
+                                    value={addressPin}
+                                    onChange={e => setAddressPin(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-red outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* GST Toggle */}
+                        <div className="bg-white rounded-xl shadow p-6">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-black text-gray-800 uppercase text-sm flex items-center gap-2">
+                                    <i className="fas fa-file-invoice text-brand-red"></i> GST
+                                </h3>
+                                <button
+                                    onClick={() => setGstEnabled(!gstEnabled)}
+                                    className={`relative w-11 h-6 rounded-full transition-colors ${gstEnabled ? 'bg-brand-red' : 'bg-gray-300'}`}
+                                >
+                                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${gstEnabled ? 'translate-x-5' : ''}`} />
+                                </button>
+                            </div>
+                            {gstEnabled && (
+                                <input
+                                    placeholder="GSTIN Number"
+                                    value={gstin}
+                                    onChange={e => setGstin(e.target.value)}
+                                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-red outline-none font-mono"
+                                />
+                            )}
+                        </div>
+
                         <div className="bg-white rounded-xl shadow p-6">
                             <h3 className="font-black text-gray-800 uppercase text-sm mb-4 flex items-center gap-2">
                                 <i className="fas fa-clock text-brand-red"></i> Expiry
@@ -756,11 +922,16 @@ export default function QuotationsView() {
                                 className="w-full bg-brand-red text-white font-bold py-4 rounded-lg hover:bg-red-700 transition uppercase tracking-wider text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isSubmitting ? (
-                                    <><i className="fas fa-spinner fa-spin"></i> Creating...</>
+                                    <><i className="fas fa-spinner fa-spin"></i> {editingId ? 'Updating...' : 'Creating...'}</>
                                 ) : (
-                                    <><i className="fas fa-paper-plane"></i> Create & Get Link</>
+                                    <><i className={`fas ${editingId ? 'fa-save' : 'fa-paper-plane'}`}></i> {editingId ? 'Update Quotation' : 'Create & Get Link'}</>
                                 )}
                             </button>
+                            {editingId && (
+                                <button onClick={resetForm} className="w-full mt-2 bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-600 transition uppercase tracking-wider text-sm">
+                                    Cancel Edit
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -769,6 +940,21 @@ export default function QuotationsView() {
             {/* ─── LIST TAB ─── */}
             {tab === 'list' && (
                 <div>
+                    {/* Archive Toggle */}
+                    <div className="flex gap-2 mb-4">
+                        <button
+                            onClick={() => setShowArchived(false)}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition ${!showArchived ? 'bg-black text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                        >
+                            <i className="fas fa-inbox mr-1"></i> Active
+                        </button>
+                        <button
+                            onClick={() => setShowArchived(true)}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition ${showArchived ? 'bg-black text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                        >
+                            <i className="fas fa-archive mr-1"></i> Archived
+                        </button>
+                    </div>
                     {selectedQuotation ? (
                         // Detail View
                         <div>
@@ -785,7 +971,7 @@ export default function QuotationsView() {
                                 </div>
 
                                 {/* Customer */}
-                                <div className="grid grid-cols-3 gap-4 mb-6 bg-gray-50 rounded-lg p-4">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 bg-gray-50 rounded-lg p-4">
                                     <div>
                                         <div className="text-xs text-gray-400 font-bold uppercase">Customer</div>
                                         <div className="text-sm font-bold text-gray-800">{selectedQuotation.customerName || '—'}</div>
@@ -798,7 +984,23 @@ export default function QuotationsView() {
                                         <div className="text-xs text-gray-400 font-bold uppercase">Phone</div>
                                         <div className="text-sm text-gray-800">{selectedQuotation.customerPhone || '—'}</div>
                                     </div>
+                                    {selectedQuotation.customerAddress && (selectedQuotation.customerAddress.street || selectedQuotation.customerAddress.city) && (
+                                        <div>
+                                            <div className="text-xs text-gray-400 font-bold uppercase">Address</div>
+                                            <div className="text-sm text-gray-800">
+                                                {[selectedQuotation.customerAddress.street, selectedQuotation.customerAddress.city, selectedQuotation.customerAddress.state, selectedQuotation.customerAddress.pinCode].filter(Boolean).join(', ')}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* GST Info */}
+                                {selectedQuotation.gstEnabled && selectedQuotation.gstin && (
+                                    <div className="mb-6 bg-blue-50 rounded-lg p-3 text-sm">
+                                        <span className="font-bold text-blue-700 uppercase text-xs">GSTIN:</span>
+                                        <span className="ml-2 font-mono text-blue-900">{selectedQuotation.gstin}</span>
+                                    </div>
+                                )}
 
                                 {/* Items */}
                                 <table className="w-full text-sm mb-6">
@@ -842,6 +1044,11 @@ export default function QuotationsView() {
                                     <button onClick={() => generatePDF(selectedQuotation)} className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-brand-red transition flex items-center gap-2">
                                         <i className="fas fa-file-pdf"></i> Export PDF
                                     </button>
+                                    {(selectedQuotation.status === 'draft' || selectedQuotation.status === 'sent') && (
+                                        <button onClick={() => startEdit(selectedQuotation)} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-blue-700 transition flex items-center gap-2">
+                                            <i className="fas fa-edit"></i> Edit
+                                        </button>
+                                    )}
                                     {selectedQuotation.status === 'sent' && (
                                         <>
                                             <button onClick={() => copyLink(selectedQuotation.token)} className="bg-black text-white px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-brand-red transition flex items-center gap-2">
@@ -855,6 +1062,16 @@ export default function QuotationsView() {
                                             </button>
                                         </>
                                     )}
+                                    {(selectedQuotation.status === 'cancelled' || selectedQuotation.status === 'expired') && (
+                                        <>
+                                            <button onClick={() => restoreQuotation(selectedQuotation._id)} className="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-green-200 transition flex items-center gap-2">
+                                                <i className="fas fa-undo"></i> Restore
+                                            </button>
+                                            <button onClick={() => permanentDelete(selectedQuotation._id)} className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm uppercase hover:bg-red-700 transition flex items-center gap-2">
+                                                <i className="fas fa-trash"></i> Delete Permanently
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* QR for active quotations */}
@@ -862,6 +1079,26 @@ export default function QuotationsView() {
                                     <div className="mt-6 text-center">
                                         <img src={generateQRDataURL(getLink(selectedQuotation.token))} alt="QR" className="mx-auto w-40 h-40 border-2 border-gray-200 rounded-lg" />
                                         <div className="text-xs text-gray-400 mt-2">Scan to pay</div>
+                                    </div>
+                                )}
+
+                                {/* Edit History */}
+                                {selectedQuotation.editHistory && selectedQuotation.editHistory.length > 0 && (
+                                    <div className="mt-6 border-t pt-4">
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-3"><i className="fas fa-history mr-1"></i> Edit History</h4>
+                                        <div className="space-y-2">
+                                            {selectedQuotation.editHistory.map((log, i) => (
+                                                <div key={i} className="flex items-start gap-3 text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+                                                    <i className="fas fa-pencil-alt text-gray-400 mt-0.5"></i>
+                                                    <div>
+                                                        <span className="font-bold text-gray-700">{log.editedBy}</span>
+                                                        <span className="mx-1">—</span>
+                                                        <span>{log.changes}</span>
+                                                        <div className="text-gray-400 mt-0.5">{new Date(log.editedAt).toLocaleString('en-IN')}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -903,10 +1140,17 @@ export default function QuotationsView() {
                                                 <td className="text-center py-3 px-4"><StatusBadge status={q.status} /></td>
                                                 <td className="text-center py-3 px-4 text-xs text-gray-500">{new Date(q.createdAt).toLocaleDateString()}</td>
                                                 <td className="text-center py-3 px-4" onClick={e => e.stopPropagation()}>
-                                                    {q.status === 'sent' && (
-                                                        <button onClick={() => copyLink(q.token)} className="text-xs font-bold text-brand-red hover:underline">
-                                                            {copySuccess === q.token ? '✓' : 'Copy Link'}
-                                                        </button>
+                                                    {showArchived ? (
+                                                        <div className="flex gap-2 justify-center">
+                                                            <button onClick={() => restoreQuotation(q._id)} className="text-xs font-bold text-green-600 hover:underline">Restore</button>
+                                                            <button onClick={() => permanentDelete(q._id)} className="text-xs font-bold text-red-600 hover:underline">Delete</button>
+                                                        </div>
+                                                    ) : (
+                                                        q.status === 'sent' && (
+                                                            <button onClick={() => copyLink(q.token)} className="text-xs font-bold text-brand-red hover:underline">
+                                                                {copySuccess === q.token ? '✓' : 'Copy Link'}
+                                                            </button>
+                                                        )
                                                     )}
                                                 </td>
                                             </tr>

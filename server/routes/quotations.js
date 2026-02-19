@@ -19,7 +19,7 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 // Create quotation
 router.post('/', async (req, res) => {
     try {
-        const { items, customerName, customerEmail, customerPhone, notes, expiresAt, createdBy } = req.body;
+        const { items, customerName, customerEmail, customerPhone, customerAddress, notes, expiresAt, createdBy, gstEnabled, gstin } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'At least one item is required' });
@@ -32,10 +32,13 @@ router.post('/', async (req, res) => {
             customerName,
             customerEmail,
             customerPhone,
+            customerAddress: customerAddress || {},
             notes,
             total,
             expiresAt: expiresAt || null,
-            createdBy: createdBy || ''
+            createdBy: createdBy || '',
+            gstEnabled: gstEnabled || false,
+            gstin: gstin || ''
         });
 
         const saved = await quotation.save();
@@ -46,10 +49,17 @@ router.post('/', async (req, res) => {
     }
 });
 
-// List all quotations
+// List quotations (supports ?archived=true)
 router.get('/', async (req, res) => {
     try {
-        const quotations = await Quotation.find().sort({ createdAt: -1 });
+        const { archived } = req.query;
+        let filter = {};
+        if (archived === 'true') {
+            filter.status = { $in: ['cancelled', 'expired'] };
+        } else {
+            filter.status = { $nin: ['cancelled', 'expired'] };
+        }
+        const quotations = await Quotation.find(filter).sort({ createdAt: -1 });
         res.json(quotations);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -67,20 +77,52 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Update quotation (admin)
+// Update quotation (admin) — with edit history
 router.put('/:id', async (req, res) => {
     try {
-        const { items, customerName, customerEmail, customerPhone, notes, expiresAt } = req.body;
-        const update = { customerName, customerEmail, customerPhone, notes, expiresAt };
+        const { items, customerName, customerEmail, customerPhone, customerAddress, notes, expiresAt, gstEnabled, gstin, editedBy } = req.body;
+
+        const q = await Quotation.findById(req.params.id);
+        if (!q) return res.status(404).json({ message: 'Quotation not found' });
+
+        // Build changes summary
+        const changes = [];
+        if (customerName !== undefined && customerName !== q.customerName) changes.push('customer name');
+        if (customerEmail !== undefined && customerEmail !== q.customerEmail) changes.push('email');
+        if (customerPhone !== undefined && customerPhone !== q.customerPhone) changes.push('phone');
+        if (customerAddress !== undefined) changes.push('address');
+        if (notes !== undefined && notes !== q.notes) changes.push('notes');
+        if (expiresAt !== undefined) changes.push('expiry');
+        if (gstEnabled !== undefined && gstEnabled !== q.gstEnabled) changes.push('GST');
+        if (gstin !== undefined && gstin !== q.gstin) changes.push('GSTIN');
+        if (items && items.length > 0) changes.push('items/pricing');
+
+        // Apply updates
+        if (customerName !== undefined) q.customerName = customerName;
+        if (customerEmail !== undefined) q.customerEmail = customerEmail;
+        if (customerPhone !== undefined) q.customerPhone = customerPhone;
+        if (customerAddress !== undefined) q.customerAddress = customerAddress;
+        if (notes !== undefined) q.notes = notes;
+        if (expiresAt !== undefined) q.expiresAt = expiresAt;
+        if (gstEnabled !== undefined) q.gstEnabled = gstEnabled;
+        if (gstin !== undefined) q.gstin = gstin;
 
         if (items && items.length > 0) {
-            update.items = items;
-            update.total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            q.items = items;
+            q.total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         }
 
-        const q = await Quotation.findByIdAndUpdate(req.params.id, update, { new: true });
-        if (!q) return res.status(404).json({ message: 'Quotation not found' });
-        res.json(q);
+        // Log edit
+        if (changes.length > 0) {
+            q.editHistory.push({
+                editedAt: new Date(),
+                editedBy: editedBy || 'Admin',
+                changes: `Updated: ${changes.join(', ')}`
+            });
+        }
+
+        const saved = await q.save();
+        res.json(saved);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -101,12 +143,48 @@ router.put('/:id/status', async (req, res) => {
     }
 });
 
-// Delete quotation (admin)
+// Restore archived quotation
+router.put('/:id/restore', async (req, res) => {
+    try {
+        const q = await Quotation.findById(req.params.id);
+        if (!q) return res.status(404).json({ message: 'Quotation not found' });
+        if (!['cancelled', 'expired'].includes(q.status)) {
+            return res.status(400).json({ message: 'Only cancelled or expired quotations can be restored' });
+        }
+        q.status = 'draft';
+        q.editHistory.push({
+            editedAt: new Date(),
+            editedBy: 'Admin',
+            changes: `Restored from ${q.status}`
+        });
+        const saved = await q.save();
+        res.json(saved);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Permanent delete (only archived)
+router.delete('/:id/permanent', async (req, res) => {
+    try {
+        const q = await Quotation.findById(req.params.id);
+        if (!q) return res.status(404).json({ message: 'Quotation not found' });
+        if (!['cancelled', 'expired'].includes(q.status)) {
+            return res.status(400).json({ message: 'Only cancelled or expired quotations can be permanently deleted' });
+        }
+        await Quotation.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Quotation permanently deleted' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete quotation (admin — soft: sets to cancelled)
 router.delete('/:id', async (req, res) => {
     try {
-        const q = await Quotation.findByIdAndDelete(req.params.id);
+        const q = await Quotation.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
         if (!q) return res.status(404).json({ message: 'Quotation not found' });
-        res.json({ message: 'Quotation deleted' });
+        res.json({ message: 'Quotation moved to archive' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -144,7 +222,9 @@ router.get('/pay/:token', async (req, res) => {
             customerName: q.customerName,
             notes: q.notes,
             expiresAt: q.expiresAt,
-            status: q.status
+            status: q.status,
+            gstEnabled: q.gstEnabled,
+            gstin: q.gstin
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -228,6 +308,7 @@ router.post('/pay/:token/complete', async (req, res) => {
 
         // ─── Create Order from Quotation ───
         try {
+            const addr = q.customerAddress || {};
             const newOrder = new Order({
                 id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                 email: q.customerEmail || 'guest@jps.com',
@@ -240,7 +321,7 @@ router.post('/pay/:token/complete', async (req, res) => {
                     brand: item.brand || 'Custom',
                     image: item.image || '',
                     specs: {},
-                    stock: item.quantity, // Mapping quantity to stock as per existing logic
+                    stock: item.quantity,
                     sold: 0,
                     available: true,
                     unavailable: false
@@ -249,12 +330,12 @@ router.post('/pay/:token/complete', async (req, res) => {
                 status: 'Processing',
                 shippingAddress: {
                     fullName: q.customerName,
-                    label: 'Home',
-                    line1: 'Quotation Order',
+                    label: 'Quotation',
+                    line1: addr.street || '',
                     line2: '',
-                    city: 'Prayagraj', // Default to local for now
-                    zip: '',
-                    state: 'Uttar Pradesh',
+                    city: addr.city || '',
+                    zip: addr.pinCode || '',
+                    state: addr.state || '',
                     phone: q.customerPhone
                 },
                 paymentMethod: 'Online (Razorpay - Quotation)',
@@ -273,7 +354,6 @@ router.post('/pay/:token/complete', async (req, res) => {
             console.log(`Order created for quotation ${q.token}`);
         } catch (orderErr) {
             console.error('Failed to auto-create order for quotation:', orderErr);
-            // We don't fail the request here, just log the error as payment is already verified
         }
 
         res.json({ success: true, message: 'Payment verified and quotation marked as paid' });

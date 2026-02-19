@@ -12,6 +12,19 @@ const QuotationItemSchema = new mongoose.Schema({
     isCustom: { type: Boolean, default: false }
 }, { _id: false });
 
+const AddressSchema = new mongoose.Schema({
+    street: { type: String, default: '' },
+    city: { type: String, default: '' },
+    state: { type: String, default: '' },
+    pinCode: { type: String, default: '' }
+}, { _id: false });
+
+const EditLogSchema = new mongoose.Schema({
+    editedAt: { type: Date, default: Date.now },
+    editedBy: { type: String, default: '' },
+    changes: { type: String, default: '' } // Human-readable summary
+}, { _id: false });
+
 const QuotationSchema = new mongoose.Schema({
     token: {
         type: String,
@@ -23,6 +36,7 @@ const QuotationSchema = new mongoose.Schema({
     customerName: { type: String, default: '' },
     customerEmail: { type: String, default: '' },
     customerPhone: { type: String, default: '' },
+    customerAddress: { type: AddressSchema, default: () => ({}) },
     notes: { type: String, default: '' },
     total: { type: Number, required: true },
     status: {
@@ -32,6 +46,9 @@ const QuotationSchema = new mongoose.Schema({
     },
     expiresAt: { type: Date },
     paymentDetails: { type: mongoose.Schema.Types.Mixed },
+    editHistory: [EditLogSchema],
+    gstEnabled: { type: Boolean, default: false },
+    gstin: { type: String, default: '' },
     createdBy: { type: String, default: '' } // Admin email
 }, { timestamps: true });
 
