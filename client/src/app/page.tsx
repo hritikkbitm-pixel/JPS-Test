@@ -73,7 +73,6 @@ function HomeContent() {
     if (productIdsFromUrl) {
       const ids = productIdsFromUrl.split(',');
       initialProducts = products.filter(p => ids.includes(p.id || ''));
-      initialProducts = products;
     } else if (categoryFromUrl === 'accessories') {
       const accessoryCats = ['headset', 'webcam', 'gamepad', 'steering-wheel', 'gaming-accessories', 'accessories'];
       initialProducts = products.filter(p => accessoryCats.includes(p.category));

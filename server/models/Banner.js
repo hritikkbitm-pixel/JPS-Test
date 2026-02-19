@@ -7,7 +7,11 @@ const BannerSchema = new mongoose.Schema({
     image: { type: String, required: true },
     target: { type: String },
     type: { type: String, default: 'hero' },
-    targetType: { type: String },
+    targetType: {
+        type: String,
+        enum: ['product', 'category', 'custom', 'filter', 'brand'],
+        default: 'filter'
+    },
     targetValue: { type: String },
     productIds: [{ type: String }],
     description: { type: String },

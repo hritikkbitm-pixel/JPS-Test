@@ -43,6 +43,7 @@ export default function HeroCarousel({ banners }: HeroCarouselProps) {
 
     // Build target link - if productIds exist, link to product filter, else use target
     const getBannerLink = (b: Banner) => {
+        if (b.target && b.target !== '/') return b.target;
         if (b.productIds && b.productIds.length > 0) {
             return `/?productIds=${b.productIds.join(',')}`;
         }

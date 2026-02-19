@@ -64,11 +64,20 @@ export default function PromoBanner({ banner, products }: PromoBannerProps) {
         );
     }
 
+    // Build target link - if productIds exist and target is root/empty, link to product filter
+    const getBannerLink = (b: Banner) => {
+        if (b.target && b.target !== '/') return b.target;
+        if (b.productIds && b.productIds.length > 0) {
+            return `/?productIds=${b.productIds.join(',')}`;
+        }
+        return b.target || '/';
+    };
+
     // Promotional Banner (full-width with image)
     if (banner.type === 'promo') {
         return (
             <section className="my-12">
-                <Link href={banner.target} className="block group">
+                <Link href={getBannerLink(banner)} className="block group">
                     <div
                         className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 h-64 md:h-80"
                         style={{

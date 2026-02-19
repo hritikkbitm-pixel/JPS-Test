@@ -99,7 +99,7 @@ export interface Banner {
     productIds?: string[]; // For product-grid banners
     backgroundColor?: string;
     textColor?: string;
-    targetType?: 'category' | 'brand' | 'product' | 'custom'; // Type of redirect
+    targetType?: 'category' | 'brand' | 'product' | 'custom' | 'filter'; // Type of redirect
     targetValue?: string; // Category name, brand name, or product ID
 }
 
