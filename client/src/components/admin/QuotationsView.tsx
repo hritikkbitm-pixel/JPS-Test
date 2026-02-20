@@ -43,6 +43,7 @@ interface Quotation {
     expiresAt?: string;
     createdBy: string;
     createdAt: string;
+    quotationDate?: string;
     editHistory?: EditLog[];
     gstEnabled?: boolean;
     gstin?: string;
@@ -88,6 +89,11 @@ export default function QuotationsView() {
     // GST
     const [gstEnabled, setGstEnabled] = useState(false);
     const [gstin, setGstin] = useState('');
+
+    // Quotation Date (editable, shown on PDF)
+    const [quotationDate, setQuotationDate] = useState<string>(
+        new Date().toISOString().split('T')[0]
+    );
 
     // Result
     const [createdQuotation, setCreatedQuotation] = useState<Quotation | null>(null);
@@ -228,7 +234,8 @@ export default function QuotationsView() {
                 notes,
                 expiresAt,
                 gstEnabled,
-                gstin: gstEnabled ? gstin : ''
+                gstin: gstEnabled ? gstin : '',
+                quotationDate: quotationDate || new Date().toISOString().split('T')[0]
             };
 
             if (editingId) {
@@ -283,6 +290,7 @@ export default function QuotationsView() {
         setGstEnabled(false);
         setGstin('');
         setEditingId(null);
+        setQuotationDate(new Date().toISOString().split('T')[0]);
     };
 
     // Start editing a quotation
@@ -302,6 +310,9 @@ export default function QuotationsView() {
         setEditingId(q._id);
         setSelectedQuotation(null);
         setTab('create');
+        // Pre-fill date: use quotationDate if set, otherwise fall back to createdAt
+        const dateSource = q.quotationDate || q.createdAt;
+        setQuotationDate(new Date(dateSource).toISOString().split('T')[0]);
     };
 
     // Restore archived quotation
@@ -374,7 +385,9 @@ export default function QuotationsView() {
 
     // ─── Export PDF ───
     const generatePDF = (q: Quotation) => {
-        const dateStr = new Date(q.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        // Use quotationDate if set, otherwise fall back to createdAt
+        const pdfDate = q.quotationDate || q.createdAt;
+        const dateStr = new Date(pdfDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
         const expiryStr = q.expiresAt ? new Date(q.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
         const itemRows = q.items.map((item, i) => `
@@ -801,6 +814,21 @@ export default function QuotationsView() {
 
                     {/* Right: Customer Info & Submit */}
                     <div className="space-y-6">
+                        {/* Quotation Date */}
+                        <div className="bg-white rounded-xl shadow p-6">
+                            <h3 className="font-black text-gray-800 uppercase text-sm mb-4 flex items-center gap-2">
+                                <i className="fas fa-calendar-alt text-brand-red"></i> Quotation Date
+                            </h3>
+                            <input
+                                type="date"
+                                value={quotationDate}
+                                max={new Date().toISOString().split('T')[0]}
+                                onChange={e => setQuotationDate(e.target.value)}
+                                className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-red outline-none"
+                            />
+                            <p className="text-xs text-gray-400 mt-2">This date will appear on the PDF quotation.</p>
+                        </div>
+
                         <div className="bg-white rounded-xl shadow p-6">
                             <h3 className="font-black text-gray-800 uppercase text-sm mb-4 flex items-center gap-2">
                                 <i className="fas fa-user text-brand-red"></i> Customer Info

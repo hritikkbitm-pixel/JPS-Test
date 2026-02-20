@@ -19,7 +19,7 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 // Create quotation
 router.post('/', async (req, res) => {
     try {
-        const { items, customerName, customerEmail, customerPhone, customerAddress, notes, expiresAt, createdBy, gstEnabled, gstin } = req.body;
+        const { items, customerName, customerEmail, customerPhone, customerAddress, notes, expiresAt, createdBy, gstEnabled, gstin, quotationDate } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'At least one item is required' });
@@ -38,7 +38,8 @@ router.post('/', async (req, res) => {
             expiresAt: expiresAt || null,
             createdBy: createdBy || '',
             gstEnabled: gstEnabled || false,
-            gstin: gstin || ''
+            gstin: gstin || '',
+            quotationDate: quotationDate ? new Date(quotationDate) : new Date()
         });
 
         const saved = await quotation.save();
@@ -80,7 +81,7 @@ router.get('/:id', async (req, res) => {
 // Update quotation (admin) — with edit history
 router.put('/:id', async (req, res) => {
     try {
-        const { items, customerName, customerEmail, customerPhone, customerAddress, notes, expiresAt, gstEnabled, gstin, editedBy } = req.body;
+        const { items, customerName, customerEmail, customerPhone, customerAddress, notes, expiresAt, gstEnabled, gstin, editedBy, quotationDate } = req.body;
 
         const q = await Quotation.findById(req.params.id);
         if (!q) return res.status(404).json({ message: 'Quotation not found' });
@@ -96,6 +97,7 @@ router.put('/:id', async (req, res) => {
         if (gstEnabled !== undefined && gstEnabled !== q.gstEnabled) changes.push('GST');
         if (gstin !== undefined && gstin !== q.gstin) changes.push('GSTIN');
         if (items && items.length > 0) changes.push('items/pricing');
+        if (quotationDate !== undefined) changes.push('quotation date');
 
         // Apply updates
         if (customerName !== undefined) q.customerName = customerName;
@@ -106,6 +108,7 @@ router.put('/:id', async (req, res) => {
         if (expiresAt !== undefined) q.expiresAt = expiresAt;
         if (gstEnabled !== undefined) q.gstEnabled = gstEnabled;
         if (gstin !== undefined) q.gstin = gstin;
+        if (quotationDate !== undefined) q.quotationDate = new Date(quotationDate);
 
         if (items && items.length > 0) {
             q.items = items;

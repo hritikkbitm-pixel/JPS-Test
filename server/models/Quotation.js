@@ -49,7 +49,8 @@ const QuotationSchema = new mongoose.Schema({
     editHistory: [EditLogSchema],
     gstEnabled: { type: Boolean, default: false },
     gstin: { type: String, default: '' },
-    createdBy: { type: String, default: '' } // Admin email
+    createdBy: { type: String, default: '' }, // Admin email
+    quotationDate: { type: Date, default: Date.now } // Editable date shown on PDF
 }, { timestamps: true });
 
 // Auto-expire check
